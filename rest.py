@@ -1,11 +1,11 @@
-import requests
+# import requests
 from flask import Flask, jsonify, request, render_template
-from flask_cors import CORS
+# from flask_cors import CORS
 
 
-import block
+# import block
 import node
-import blockchain
+# import blockchain
 import wallet
 import transaction
 import wallet
@@ -16,8 +16,8 @@ import wallet
 
 
 app = Flask(__name__)
-CORS(app)
-blockchain = Blockchain()
+# CORS(app)
+# blockchain = Blockchain()
 
 
 #.......................................................................................
@@ -26,12 +26,13 @@ blockchain = Blockchain()
 
 # get all transactions in the blockchain
 
-@app.route('/transactions/get', methods=['GET'])
+@app.route('/', methods=['GET'])
 def get_transactions():
-    transactions = blockchain.transactions
+    return "hello world"
+#     transactions = blockchain.transactions
 
-    response = {'transactions': transactions}
-    return jsonify(response), 200
+#     response = {'transactions': transactions}
+#     return jsonify(response), 200
 
 
 

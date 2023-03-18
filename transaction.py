@@ -7,6 +7,7 @@ import Crypto.Random
 from Crypto.Hash import SHA
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
+import hashlib
 
 #import requests
 from flask import Flask, jsonify, request, render_template
@@ -17,6 +18,9 @@ class TransactionIO:
         self.transaction_id = transaction_id
         self.address = address
         self.amount = amount
+    
+    def print_trans(self):
+        print("TransactionIO: ", self.transaction_id, ", ", self.address, ", ", self.amount, "\n")
         
 
 class Transaction:
@@ -28,18 +32,32 @@ class Transaction:
         self.amount = amount # το ποσό που θα μεταφερθεί
         self.transaction_id = self.hash() # το hash του transaction
         self.transaction_inputs = transactionInputs # λίστα από Transaction Input
-        change = amount - sum([x.amount for x in transactionInputs])
+        change = sum([x.amount for x in transactionInputs]) -  amount
         self.transaction_outputs = [TransactionIO(self.transaction_id, sender_address, change), 
                                     TransactionIO(self.transaction_id, receiver_address, amount)] # λίστα από Transaction Output 
-        self.Signature = self.sign_transaction(sender_private_key)
+        self.signature = self.sign_transaction(sender_private_key)
 
     def to_dict(self):
         return
     
     def hash(self):
-        return 0
+        #calculate self.hash
+        block_to_string = str(self.sender_address) + str(self.receiver_address) + str(self.amount) + str(self.transaction_inputs) + str(self.transaction_outputs)
+        self.hash = hashlib.sha512(block_to_string).hexdigest()
+        return self.hash
 
     def sign_transaction(self, sender_private_key):
-        # Sign transaction with private key
-        return
-       
+        """
+        Sign transaction with private key
+        """
+        sk = RSA.importKey(sender_private_key)
+        signer = PKCS1_v1_5.new(sk)
+        return signer.sign(self.transaction_id)
+    
+    def print_trans(self):
+        print("TransactionIO: ", self.transaction_id, ", ", self.sender_address, ", ", self.receiver_address, ", ", self.amount, "\n")
+    
+    def verify_signature(self):
+        pk = RSA.import_key(self.sender_address)
+        verifier = PKCS1_v1_5.new(pk)
+        return verifier.verify(self.transaction_id, self.signature)

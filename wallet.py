@@ -15,7 +15,7 @@ import transaction
 
 
 
-class wallet:
+class Wallet:
 
 	def __init__(self):
 
