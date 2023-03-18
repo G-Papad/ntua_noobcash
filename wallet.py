@@ -18,10 +18,10 @@ import transaction
 class Wallet:
 
 	def __init__(self):
-
-		rsaKeys = RSA.generate(2048)
-		self.public_key = rsaKeys.publickey().exportKey('PEM')
-		self.private_key = rsaKeys.exportKey('PEM')
+		key_length = 1024
+		rsaKeys = RSA.generate(key_length)
+		self.private_key = rsaKeys.export_key()
+		self.public_key = rsaKeys.publickey().export_key()
 		self.address = self.public_key
 		self.utxos = []
 

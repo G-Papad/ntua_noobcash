@@ -8,6 +8,9 @@ from Crypto.Hash import SHA
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 import hashlib
+from Crypto.Hash import SHA256
+from Crypto.Signature import pkcs1_15
+from Crypto.PublicKey import RSA
 
 #import requests
 from flask import Flask, jsonify, request, render_template
@@ -42,16 +45,14 @@ class Transaction:
     
     def hash(self):
         #calculate self.hash
-        block_to_string = str(self.sender_address) + str(self.receiver_address) + str(self.amount) + str(self.transaction_inputs) + str(self.transaction_outputs)
-        self.hash = hashlib.sha512(block_to_string).hexdigest()
-        return self.hash
+        block_to_byte = bytes(str(self.sender_address) + str(self.receiver_address) + str(self.amount), 'utf-8')
+        return SHA256.new(block_to_byte)
 
     def sign_transaction(self, sender_private_key):
         """
         Sign transaction with private key
         """
-        sk = RSA.importKey(sender_private_key)
-        signer = PKCS1_v1_5.new(sk)
+        signer = pkcs1_15.new(RSA.import_key(sender_private_key))
         return signer.sign(self.transaction_id)
     
     def print_trans(self):
