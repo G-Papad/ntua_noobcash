@@ -30,22 +30,24 @@ class TransactionIO:
         print("TransactionIO: ", self.transaction_id, ", ", self.address, ", ", self.amount, "\n")
         
     def toString(self):
-        return self.transaction_id.hexdigest() + ' ' + self.address.decode() + ' ' + str (self.amount)
+        return [self.transaction_id.hexdigest(), self.address.decode(), str (self.amount)]
 
 class Transaction:
 
-    def __init__(self, sender_address, receiver_address, amount, transactionInputs, sender_private_key = None):
+    def __init__(self, sender_address, receiver_address, amount, transactionInputs, sender_private_key = None, signature=None):
     
         self.sender_address = sender_address # To public key του wallet από το οποίο προέρχονται τα χρήματα
         self.receiver_address = receiver_address # To public key του wallet στο οποίο θα καταλήξουν τα χρήματα
         self.amount = amount # το ποσό που θα μεταφερθεί
         self.transaction_id = self.hash() # το hash του transaction
         self.transaction_inputs = transactionInputs # λίστα από Transaction Input
-        change = sum([x.amount for x in transactionInputs]) -  amount
+        change = sum([x.amount for x in transactionInputs]) - amount
         self.transaction_outputs = [TransactionIO(self.transaction_id, sender_address, change), 
                                     TransactionIO(self.transaction_id, receiver_address, amount)] # λίστα από Transaction Output 
         if (sender_private_key != None): 
             self.signature = self.sign_transaction(sender_private_key)
+        else:
+            self.signature = signature
 
     def to_dict(self):
         
@@ -76,7 +78,7 @@ class Transaction:
     def print_trans(self):
         print("TransactionIO: ", self.transaction_id, ", ", self.sender_address, ", ", self.receiver_address, ", ", self.amount, "\n")
     
-    def verify_signature(self, sig):
+    def verify_signature(self):
         pk = RSA.import_key(self.sender_address)
         verifier = PKCS1_v1_5.new(pk)
-        return verifier.verify(self.transaction_id, sig)
+        return verifier.verify(self.transaction_id, self.signature)

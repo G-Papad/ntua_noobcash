@@ -18,8 +18,8 @@ class Node:
 		# self.NBCs 
 		self.ring = {self.wallet.address : [0, '127.0.0.1:5000', self.NBC]} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
 
-	def create_new_block():
-		return
+	def create_new_block(self):
+		return block.Block(0,0)
 
 	def create_wallet(self):
 		return wallet.Wallet()
@@ -84,13 +84,14 @@ class Node:
 
 	def validate_transaction(self, T):
 		#use of signature and NBCs balance
-		if T.hash() != T.transaction_id:
-			print("Error: Wrong hash!\n")
-			return False
+		# if T.hash() != T.transaction_id:
+		# 	print("Error: Wrong hash!\n")
+		# 	return False
 		if not T.verify_signature(): 
 			print("Error: Wrong signature!\n")
 			return False
 		# also check for enough balance
+
 		return True
 
 

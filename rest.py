@@ -11,6 +11,7 @@ import node
 import wallet
 import transaction
 import wallet
+import block
 
 
 ### JUST A BASIC EXAMPLE OF A REST API WITH FLASK
@@ -47,11 +48,17 @@ def receive_transactions():
     sa = bytes(temp['sender_address'], 'utf-8')
     ra = bytes(temp['receiver_address'], 'utf-8')
     amount = temp['amount']
-    print('sig', sig)
-    print('sa', sa)
-    T = transaction.Transaction(sa, ra, amount, [])
-    b = T.verify_signature(sig)
-    print(b)
+
+    transaction_inputs = [transaction.TransactionIO(r[0], bytes(r[1],'utf-8'), int(r[2])) for r in temp['transaction_inputs']]
+    transaction_outputs = [transaction.TransactionIO(r[0], bytes(r[1],'utf-8'), int(r[2])) for r in temp['transaction_outputs']]
+    
+    T = transaction.Transaction(sa, ra, amount, transaction_inputs, signature=sig)
+
+    if (myNode.validate_transaction(T)):
+        myBlock.add_transaction(T)
+        print("Transcation added to current Block!")
+    
+
     return temp
 
 if __name__ == '__main__':
@@ -61,5 +68,10 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--port', default=5000, type=int, help='port to listen on')
     args = parser.parse_args()
     port = args.port
+
+    myNode = node.Node()
+
+    myBlock = myNode.create_new_block()
+    
 
     app.run(host='127.0.0.1', port=port)
