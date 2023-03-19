@@ -41,7 +41,7 @@ class Node:
 			if t.address == self.wallet.address: 
 				transactionInputs.append(t)
 				s += t.amount
-		self.broadcast_transaction(transaction.Transaction(self.wallet.public_key, receiver, amount, self.wallet.private_key, transactionInputs))
+		self.broadcast_transaction(transaction.Transaction(self.wallet.public_key, receiver, amount, transactionInputs, self.wallet.private_key))
 
 
 	def broadcast_transaction(self, T):

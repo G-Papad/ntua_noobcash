@@ -31,9 +31,10 @@ class TransactionIO:
         
     def toString(self):
         return self.transaction_id.hexdigest() + ' ' + self.address.decode() + ' ' + str (self.amount)
+
 class Transaction:
 
-    def __init__(self, sender_address, receiver_address, amount, sender_private_key, transactionInputs):
+    def __init__(self, sender_address, receiver_address, amount, transactionInputs, sender_private_key = None):
     
         self.sender_address = sender_address # To public key του wallet από το οποίο προέρχονται τα χρήματα
         self.receiver_address = receiver_address # To public key του wallet στο οποίο θα καταλήξουν τα χρήματα
@@ -43,7 +44,8 @@ class Transaction:
         change = sum([x.amount for x in transactionInputs]) -  amount
         self.transaction_outputs = [TransactionIO(self.transaction_id, sender_address, change), 
                                     TransactionIO(self.transaction_id, receiver_address, amount)] # λίστα από Transaction Output 
-        self.signature = self.sign_transaction(sender_private_key)
+        if (sender_private_key != None): 
+            self.signature = self.sign_transaction(sender_private_key)
 
     def to_dict(self):
         
@@ -74,7 +76,7 @@ class Transaction:
     def print_trans(self):
         print("TransactionIO: ", self.transaction_id, ", ", self.sender_address, ", ", self.receiver_address, ", ", self.amount, "\n")
     
-    def verify_signature(self):
+    def verify_signature(self, sig):
         pk = RSA.import_key(self.sender_address)
         verifier = PKCS1_v1_5.new(pk)
-        return verifier.verify(self.transaction_id, self.signature)
+        return verifier.verify(self.transaction_id, sig)
