@@ -12,8 +12,12 @@ from Crypto.Hash import SHA256
 from Crypto.Signature import pkcs1_15
 from Crypto.PublicKey import RSA
 
+import json
+from json import JSONEncoder
 #import requests
 from flask import Flask, jsonify, request, render_template
+
+import base64
 
 class TransactionIO:
 
@@ -25,7 +29,8 @@ class TransactionIO:
     def print_trans(self):
         print("TransactionIO: ", self.transaction_id, ", ", self.address, ", ", self.amount, "\n")
         
-
+    def toString(self):
+        return self.transaction_id.hexdigest() + ' ' + self.address.decode() + ' ' + str (self.amount)
 class Transaction:
 
     def __init__(self, sender_address, receiver_address, amount, sender_private_key, transactionInputs):
@@ -41,7 +46,18 @@ class Transaction:
         self.signature = self.sign_transaction(sender_private_key)
 
     def to_dict(self):
-        return
+        
+        transactions = {
+            'sender_address' : self.sender_address.decode(),
+            'receiver_address' : self.receiver_address.decode(),
+            'amount' : self.amount,
+            'transaction_id' : self.transaction_id.hexdigest(),
+            'transaction_inputs' : [x.toString() for x in self.transaction_inputs],
+            'transaction_outputs' : [x.toString() for x in self.transaction_outputs],
+            'signature' : base64.b64encode(self.signature).decode()
+        }
+
+        return transactions
     
     def hash(self):
         #calculate self.hash

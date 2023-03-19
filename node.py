@@ -1,19 +1,22 @@
 import block
 import wallet
 import transaction
+import json
+from flask import Flask, jsonify, request, render_template
+import requests
 
 log = []
 
 class Node:
 	def __init__(self):
-		self.NBC=100;
+		self.NBC=100
 		##set
 
 		#self.chain
 		self.current_id_count = 0
 		self.wallet = self.create_wallet()
 		# self.NBCs 
-		self.ring = {self.wallet.address : [0, -1, self.NBC]} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
+		self.ring = {self.wallet.address : [0, '127.0.0.1:5000', self.NBC]} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
 
 	def create_new_block():
 		return
@@ -41,8 +44,17 @@ class Node:
 		self.broadcast_transaction(transaction.Transaction(self.wallet.public_key, receiver, amount, self.wallet.private_key, transactionInputs))
 
 
-	def broadcast_transaction(self,T):
+	def broadcast_transaction(self, T):
+		
 		log.append(T)
+		dic = T.to_dict()
+
+		for _, value in self.ring.items():
+			ip = value[1]
+			url = 'http://' + ip + '/'
+			data = json.dumps(dic)
+			res = requests.post(url + 'broadcast', json = data)
+
 
 	def receive(self):
 		newT = log[0]

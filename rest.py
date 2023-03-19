@@ -1,5 +1,7 @@
 # import requests
 from flask import Flask, jsonify, request, render_template
+from flask_socketio import SocketIO
+import json
 # from flask_cors import CORS
 
 
@@ -35,7 +37,11 @@ def get_transactions():
 #     return jsonify(response), 200
 
 
-
+@app.route('/broadcast', methods=['POST'])
+def receive_transactions():
+    temp = json.loads(request.data)
+    print(temp)
+    return temp
 # run it once fore every node
 
 if __name__ == '__main__':

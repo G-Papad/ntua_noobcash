@@ -4,13 +4,13 @@ import wallet
 
 n1 = node.Node()
 n2 = node.Node()
-ring = n1.register_node_to_ring(n2.wallet.address, -2)
+ring = n1.register_node_to_ring(n2.wallet.address, '127.0.0.1:5000')
 n2.ring = {}
 for x in ring:
     n2.ring[x] = ring[x].copy()
 
-n1.wallet.utxos.append(transaction.TransactionIO(5, n1.wallet.public_key, 200))
-n2.wallet.utxos.append(transaction.TransactionIO(5, n1.wallet.public_key, 200))
+# n1.wallet.utxos.append(transaction.TransactionIO(5, n1.wallet.public_key, 200))
+# n2.wallet.utxos.append(transaction.TransactionIO(5, n1.wallet.public_key, 200))
 
 n1.create_transaction(n2.wallet.public_key, 100)
 n1.receive()
