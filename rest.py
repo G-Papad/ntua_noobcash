@@ -54,7 +54,7 @@ def receive_transactions():
     T = transaction.Transaction(sender_adsress, receiver_address, amount, transaction_inputs, signature=sig)
     # T.print_trans()
     # print(transaction_inputs)
-    if (myNode.validate_transaction(T)):
+    if (not myNode.validate_transaction(T)):
         myNode.add_transaction_to_block(T)
         print("Transcation added to current Block!")
         print(myNode.wallet.utxos)
@@ -63,9 +63,7 @@ def receive_transactions():
             print(x.transaction_id, x.amount)
     else:
         print("You cant steal from me bozo!")
-        for x in myNode.wallet.utxos:
-            print("The UTXOs for all nodes: ")
-            x.print_trans()
+    
     return temp
 
 @app.route('/register', methods=['POST'])

@@ -99,11 +99,17 @@ class Node:
 	def run_blockchain(self):
 		self.wallet.utxos = []
 		i=1
+		print("UTXOs before running BlockChain:")
+		for x in self.wallet.utxos:
+			x.print_trans()
 		for b in self.chain.blocks:
 			self.block = b
 			print("Running Block number ", i)
 			self.run_block()
-			i += 1 
+			i += 1
+		print("UTXOs after running BlockChain:")
+		for x in self.wallet.utxos:
+			x.print_trans()
 
 
 	def run_block(self):
@@ -117,7 +123,7 @@ class Node:
 
 		for t_in in transaction_inputs:
 			for t in self.wallet.utxos:
-				if t_in.transaction_id == t.transaction_id :
+				if t_in.transaction_id == t.transaction_id and t_in.address == t.address and t_in.amount == t.amount:
 					self.wallet.utxos.remove(t)
 		
 		for t_out in transaction_outputs:
