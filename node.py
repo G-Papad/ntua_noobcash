@@ -17,7 +17,7 @@ class Node:
 			#self.chain
 			self.id = 0
 			self.current_id_count = 1 #id for the next node
-			self.ring = {self.wallet.address : [0, '127.0.0.1:5000']} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
+			self.ring = {self.wallet.address.decode() : [0, '192.168.1.4']} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
 			genesis_block = block.Block(1,time.time(), 0)
 			genesis_transaction = transaction.Transaction(0, self.wallet.address, self.NBC,[])
 			genesis_block.add_transaction(genesis_transaction)
@@ -40,13 +40,17 @@ class Node:
 		#add this node to the ring, only the bootstrap node can add a node to the ring after checking his wallet and ip:port address
 		#bottstrap node informs all other nodes and gives the request node an id and 100 NBCs
 		if(self.id==0):
+			print(type(public_key))
 			if public_key in self.ring.keys():
 				requests.post('http://'+ip+'/registerFail', json={'ERROR' : 'Public address already in use!'})
 			else:
 				self.ring[public_key] = [self.current_id_count, ip]
 				for _, value in self.ring.items():
-					ip = value[1]
+					print(type(_))
+					ip = value[1]+':5000'
 					url = 'http://'+ip+'/broadcastNewNode'
+					#ring to json:
+					# json_ring = {x.decode():val for x,val in self.ring.items()}
 					requests.post(url, json={'ring' : self.ring})
 				self.current_id_count+=1
 		return

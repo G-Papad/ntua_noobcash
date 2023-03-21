@@ -64,7 +64,8 @@ def receive_transactions():
 def registerNode():
     temp = json.loads((request.data).decode())
 
-    public_key = bytes(temp['public_key'], 'utf-8')
+    # public_key = bytes(temp['public_key'], 'utf-8')
+    public_key = temp['public_key']
     ip=request.remote_addr
     print(ip)
     myNode.register_node_to_ring(public_key,ip)
@@ -100,7 +101,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     port = args.port
 
-    myNode = node.Node()
+    myNode = node.Node(master=True, N=5)
     print(myNode.wallet.public_key)
 
     # master_url='http://192.168.1.4:5000/register'
