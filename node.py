@@ -4,22 +4,34 @@ import transaction
 import json
 from flask import Flask, jsonify, request, render_template
 import requests
+import time
 
 log = []
 
 class Node:
-	def __init__(self):
-		self.NBC=100
-		##set
-
-		#self.chain
-		self.current_id_count = 0
+	def __init__(self, master=False, N=None):
 		self.wallet = self.create_wallet()
-		# self.NBCs 
-		self.ring = {self.wallet.address : [0, '127.0.0.1:5000', self.NBC]} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
+		self.doMine = False
+		if(master):
+			self.NBC=100*N
+			#self.chain
+			self.id = 0
+			self.current_id_count = 1 #id for the next node
+			self.ring = {self.wallet.address : [0, '127.0.0.1:5000']} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
+			genesis_block = block.Block(1,time.time(), 0)
+			genesis_transaction = transaction.Transaction(0, self.wallet.address, self.NBC,[])
+			genesis_block.add_transaction(genesis_transaction)
+		else:
+			self.id=-1
+			self.ring={}	
+			self.block = self.create_new_block()
+		
 
 	def create_new_block(self):
-		return block.Block(0,0)
+		#to change!
+		# return block.Block(0,0)
+		self.doMine = False
+		self.block = block.Block(0,0)
 
 	def create_wallet(self):
 		return wallet.Wallet()
@@ -27,10 +39,21 @@ class Node:
 	def register_node_to_ring(self, public_key, ip):
 		#add this node to the ring, only the bootstrap node can add a node to the ring after checking his wallet and ip:port address
 		#bottstrap node informs all other nodes and gives the request node an id and 100 NBCs
-		self.current_id_count += 1
-		self.ring[self.wallet.address][2] += 100
-		self.ring[public_key] = [self.current_id_count, ip, 0]		
-		return self.ring
+		if(self.id==0):
+			if public_key in self.ring.keys():
+				requests.post('http://'+ip+'/registerFail', json={'ERROR' : 'Public address already in use!'})
+			else:
+				self.ring[public_key] = [self.current_id_count, ip]
+				for _, value in self.ring.items():
+					ip = value[1]
+					url = 'http://'+ip+'/broadcastNewNode'
+					requests.post(url, json={'ring' : self.ring})
+				self.current_id_count+=1
+		return
+		# self.current_id_count += 1
+		# self.ring[self.wallet.address][2] += 100
+		# self.ring[public_key] = [self.current_id_count, ip, 0]		
+		# return self.ring
 
 	def create_transaction(self, receiver, amount):
 		#remember to broadcast it
@@ -96,12 +119,20 @@ class Node:
 
 
 
-	# def add_transaction_to_block():
-	# 	#if enough transactions  mine
+	def add_transaction_to_block(self, T):
+		# if enough transactions  mine
+		if(self.doMine == False):
+			self.block.add_transaction(T)
+			if(len(self.block.listOfTransactions) == CAPACITY):
+				self.doMine = True
+				self.mine_block()
+		else:
+			return
 
 
-
-	# def mine_block():
+	def mine_block(self):
+		#do later
+		return
 
 
 
