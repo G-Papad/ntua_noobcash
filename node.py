@@ -25,7 +25,7 @@ class Node:
 			self.current_id_count = 1 #id for the next node
 			self.ring = {self.wallet.address.decode() : [0, '192.168.1.4']} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
 			genesis_block = block.Block(1,time.time(), 0)
-			genesis_transaction = transaction.Transaction(0, self.wallet.address, self.NBC,[])
+			genesis_transaction = transaction.Transaction(b'0', self.wallet.address, self.NBC,[],signature='notvalid_signature_bozo')
 			genesis_block.add_transaction(genesis_transaction)
 			self.chain.add_block(genesis_block)
 		else:
