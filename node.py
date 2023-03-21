@@ -5,26 +5,33 @@ import json
 from flask import Flask, jsonify, request, render_template
 import requests
 import time
+import blockchain
 
+#####################################
+# [TO FIX]: Implement in BlockChain
+#####################################
+
+CAPACITY = 1
+port = ':5000'
 
 class Node:
 	def __init__(self, master=False, N=None):
 		self.wallet = self.create_wallet()
 		self.doMine = False
+		self.chain = blockchain.BlockChain(capacity=CAPACITY)
 		if(master):
 			self.NBC=100*N
-			#self.chain
 			self.id = 0
 			self.current_id_count = 1 #id for the next node
 			self.ring = {self.wallet.address.decode() : [0, '192.168.1.4']} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
 			genesis_block = block.Block(1,time.time(), 0)
 			genesis_transaction = transaction.Transaction(0, self.wallet.address, self.NBC,[])
 			genesis_block.add_transaction(genesis_transaction)
+			self.chain.add_block(genesis_block)
 		else:
 			self.id=-1
 			self.ring={}	
 			self.block = self.create_new_block()
-		
 
 	def create_new_block(self):
 		self.doMine = False
@@ -39,18 +46,20 @@ class Node:
 		if(self.id==0):
 			print(type(public_key))
 			if public_key in self.ring.keys():
-				requests.post('http://'+ip+'/registerFail', json={'ERROR' : 'Public address already in use!'})
+				requests.post('http://'+ip+port+'/registerFail', json={'ERROR' : 'Public address already in use!'})
 			else:
 				self.ring[public_key] = [self.current_id_count, ip]
 				for _, value in self.ring.items():
 					print(type(_))
-					ip = value[1]+':5000'
-					url_newNode = 'http://'+ip+'/broadcastNewNode'
+					ip_b = value[1]
+					url_newNode = 'http://'+ip_b+port+'/broadcastNewNode'
 					requests.post(url_newNode, json={'ring' : self.ring})
 				self.current_id_count+=1
 
 				self.create_transaction(receiver=public_key, amount=100)
-
+				url_newNode = 'http://'+ip+port+'/broadcastBlockChain'
+				json_blockchain = self.chain.to_dict()
+				requests.post(url_newNode, json=json_blockchain)
 		return
 
 	def create_transaction(self, receiver, amount):
@@ -71,8 +80,8 @@ class Node:
 		for _, value in self.ring.items():
 			ip = value[1]
 			url = 'http://' + ip + '/'
-			data = json.dumps(dic)
-			res = requests.post(url + 'broadcastTransaction', json = data)
+			# data = json.dumps(dic)
+			res = requests.post(url + 'broadcastTransaction', json = dic)
 
 	def run_transaction(self, T):
 		transaction_inputs = T.transaction_inputs
@@ -97,6 +106,9 @@ class Node:
 		# also check for enough balance
 		# Should we check for enough balance or for same transaction inputs?
 		transaction_inputs = T.transaction_inputs
+
+		if transaction_inputs == []:
+			return False
 
 		for t_in in transaction_inputs:
 			res = False 
@@ -140,7 +152,7 @@ class Node:
 	# #concencus functions
 
 	# def valid_chain(self, chain):
-	# 	#check for the longer chain accroose all nodes
+	# 	#check for the longer chain across all nodes
 
 
 	# def resolve_conflicts(self):

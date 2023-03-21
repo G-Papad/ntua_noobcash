@@ -20,3 +20,14 @@ class Block:
 
     def add_transaction(self, T):
         self.listOfTransactions.append(T)
+        return
+    
+    def to_dict(self):
+        block = {
+            'previousHash' : self.previousHash,
+            'timestamp' : self.timestamp,
+            # 'hash' : '',
+            'nonce' : self.nonce,
+            'listOfTransactions' : [x.to_dict() for x in self.listOfTransactions]
+        }
+        return block

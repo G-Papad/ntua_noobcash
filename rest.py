@@ -40,7 +40,7 @@ def get_transactions():
 @app.route('/broadcastTransaction', methods=['POST'])
 def receive_transactions():
     temp = json.loads((request.data).decode())
-    temp = json.loads(temp)
+    # temp = json.loads(temp)
     # temp = request.data
     # print(temp)
     sig = base64.b64decode(temp['signature'].encode())
@@ -52,13 +52,17 @@ def receive_transactions():
     transaction_outputs = [transaction.TransactionIO(r[0], bytes(r[1],'utf-8'), int(r[2])) for r in temp['transaction_outputs']]
     
     T = transaction.Transaction(sender_adsress, receiver_address, amount, transaction_inputs, signature=sig)
-
+    T.print_trans()
+    print(transaction_inputs)
     if (myNode.validate_transaction(T)):
-        # myBlock.add_transaction(T)
         myNode.add_transaction_to_block(T)
         print("Transcation added to current Block!")
-    
-
+        print(myNode.wallet.utxos)
+        myNode.run_transaction(T)
+        for x in myNode.wallet.utxos:
+            print(x.transaction_id, x.amount)
+    else:
+        print("You cant steal from me bozo!")
     return temp
 
 @app.route('/register', methods=['POST'])
@@ -84,6 +88,7 @@ def renew_pk():
 def login():
     master = master_url + '/register'
     requests.post(master, json={'public_key': myNode.wallet.public_key.decode()})
+    return "Login Page"
 
 
 @app.route('/broadcastNewNode', methods=['POST'])
@@ -99,6 +104,10 @@ def addNode():
     print(ring)
     return '1'
 
+@app.route('/broadcastBlockChain', methods=['POST'])
+def receiveBlockChain():
+    temp = json.loads((request.data).decode())
+
 if __name__ == '__main__':
     from argparse import ArgumentParser
 
@@ -113,5 +122,5 @@ if __name__ == '__main__':
     # myBlock = myNode.create_new_block()
     myNode.create_new_block()
     
-    app.run(host='192.168.1.4', port=port)
+    app.run(host='192.168.1.9', port=port)
     
