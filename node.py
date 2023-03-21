@@ -6,7 +6,6 @@ from flask import Flask, jsonify, request, render_template
 import requests
 import time
 
-log = []
 
 class Node:
 	def __init__(self, master=False, N=None):
@@ -28,8 +27,6 @@ class Node:
 		
 
 	def create_new_block(self):
-		#to change!
-		# return block.Block(0,0)
 		self.doMine = False
 		self.block = block.Block(0,0)
 
@@ -48,16 +45,13 @@ class Node:
 				for _, value in self.ring.items():
 					print(type(_))
 					ip = value[1]+':5000'
-					url = 'http://'+ip+'/broadcastNewNode'
-					#ring to json:
-					# json_ring = {x.decode():val for x,val in self.ring.items()}
-					requests.post(url, json={'ring' : self.ring})
+					url_newNode = 'http://'+ip+'/broadcastNewNode'
+					requests.post(url_newNode, json={'ring' : self.ring})
 				self.current_id_count+=1
+
+				self.create_transaction(receiver=public_key, amount=100)
+
 		return
-		# self.current_id_count += 1
-		# self.ring[self.wallet.address][2] += 100
-		# self.ring[public_key] = [self.current_id_count, ip, 0]		
-		# return self.ring
 
 	def create_transaction(self, receiver, amount):
 		#remember to broadcast it
@@ -70,45 +64,28 @@ class Node:
 				s += t.amount
 		self.broadcast_transaction(transaction.Transaction(self.wallet.public_key, receiver, amount, transactionInputs, self.wallet.private_key))
 
-
 	def broadcast_transaction(self, T):
 		
-		log.append(T)
 		dic = T.to_dict()
 
 		for _, value in self.ring.items():
 			ip = value[1]
 			url = 'http://' + ip + '/'
 			data = json.dumps(dic)
-			res = requests.post(url + 'broadcast', json = data)
+			res = requests.post(url + 'broadcastTransaction', json = data)
 
+	def run_transaction(self, T):
+		transaction_inputs = T.transaction_inputs
+		transaction_outputs = T.transaction_outputs
 
-	def receive(self):
-		newT = log[0]
-		self.validate_transaction(newT)
-		for x in newT.transaction_inputs:
-			for y in self.wallet.utxos: 
-				if x.transaction_id == y.transaction_id and x.address == y.address and x.amount == y.amount:
-					self.wallet.utxos.remove(y)
-					if x.address in self.ring: 						# update ring dict
-						self.ring[x.address][2] -= x.amount
-					else: 
-						print("Something went wrong with NBCs dict")
-
-		for x in newT.transaction_outputs:
-			self.wallet.utxos.append(x)
-			self.ring[x.address][2] += x.amount
-
-		for x in newT.transaction_inputs:
-			print("Input:\n")
-			x.print_trans()
-		for x in newT.transaction_outputs:
-			print("Output:\n")
-			x.print_trans()
-		for x in self.wallet.utxos:
-			print("Wallet:")
-			x.print_trans()
-
+		for t_in in transaction_inputs:
+			for t in self.wallet.utxos:
+				if t_in.transaction_id == t.transaction_id :
+					self.wallet.utxos.remove(t)
+		
+		for t_out in transaction_outputs:
+			self.wallet.utxos.append(t_out)
+			
 	def validate_transaction(self, T):
 		#use of signature and NBCs balance
 		# if T.hash() != T.transaction_id:
@@ -118,7 +95,17 @@ class Node:
 			print("Error: Wrong signature!\n")
 			return False
 		# also check for enough balance
+		# Should we check for enough balance or for same transaction inputs?
+		transaction_inputs = T.transaction_inputs
 
+		for t_in in transaction_inputs:
+			res = False 
+			for t_utxo in self.wallet.utxos:
+				if t_in.transaction_id == t_utxo.transaction_id:
+					res = True
+			if res == False:
+				return False
+			
 		return True
 
 

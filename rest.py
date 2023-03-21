@@ -15,6 +15,7 @@ import block
 ### JUST A BASIC EXAMPLE OF A REST API WITH FLASK
 
 
+master_url='http://192.168.1.4:5000'
 
 app = Flask(__name__)
 # CORS(app)
@@ -36,7 +37,7 @@ def get_transactions():
 #     return jsonify(response), 200
 
 
-@app.route('/broadcast', methods=['POST'])
+@app.route('/broadcastTransaction', methods=['POST'])
 def receive_transactions():
     temp = json.loads((request.data).decode())
     temp = json.loads(temp)
@@ -74,10 +75,15 @@ def registerNode():
 @app.route('/registerFail', methods=['POST'])
 def renew_pk():
     myNode.wallet = myNode.create_wallet()
-    master_url='http://192.168.1.4:5000/register'
     requests.post(master_url, json={'public_key': myNode.wallet.public_key.decode()})
 
     return '1'
+
+
+@app.route('/login', methods=['GET'])
+def login():
+    master = master_url + '/register'
+    requests.post(master, json={'public_key': myNode.wallet.public_key.decode()})
 
 
 @app.route('/broadcastNewNode', methods=['POST'])
@@ -101,11 +107,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     port = args.port
 
-    myNode = node.Node(master=True, N=5)
+    myNode = node.Node()
     print(myNode.wallet.public_key)
-
-    # master_url='http://192.168.1.4:5000/register'
-    # requests.post(master_url, json={'public_key': myNode.wallet.public_key.decode()})
 
     # myBlock = myNode.create_new_block()
     myNode.create_new_block()
