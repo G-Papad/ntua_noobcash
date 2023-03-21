@@ -5,14 +5,14 @@ import transaction
 
 
 class Block:
-    def __init__(self, previousHash, timestamp, nonce=-1):
+    def __init__(self, previousHash, timestamp, nonce=-1,tlist=[]):
         ##set
 
         self.previousHash = previousHash
         self.timestamp = timestamp
         #self.hash
         self.nonce=nonce
-        self.listOfTransactions=[]
+        self.listOfTransactions=tlist
 
     def myHash(self):
         #calculate self.hash

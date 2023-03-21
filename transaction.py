@@ -82,3 +82,4 @@ class Transaction:
         pk = RSA.import_key(self.sender_address)
         verifier = PKCS1_v1_5.new(pk)
         return verifier.verify(self.transaction_id, self.signature)
+   

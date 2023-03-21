@@ -108,6 +108,33 @@ def addNode():
 def receiveBlockChain():
     temp = json.loads((request.data).decode())
 
+    blocks = temp['blocks']
+    capacity = temp['capacity']
+    
+    block_list = []
+    for x in blocks:
+        prev_hash = x['previousHash']
+        ts = x['timestamp']
+        nonce = x['nonce']
+        transactions = x['listOfTransactions']
+        
+        t_list = []
+        for t in transactions:
+            sender_address = t['sender_address'].encode()
+            receiver_address = t['receiver_address'].encode()
+            amount = t['amount']
+            signature = base64.b64decode(t['signature'].encode())
+            transaction_inputs = [transaction.TransactionIO(r[0], bytes(r[1],'utf-8'), int(r[2])) for r in t['transaction_inputs']]
+            t_list.append(transaction.Transaction(sender_address, receiver_address, amount, transaction_inputs, signature=signature))
+
+        block_list.append(block.Block(prev_hash, ts, nonce, t_list))
+    myNode.chain.blocks = block_list
+    myNode.chain.capacity = capacity
+    print(len(myNode.chain.blocks))
+    myNode.run_blockchain()
+
+    return 'ok'
+
 if __name__ == '__main__':
     from argparse import ArgumentParser
 

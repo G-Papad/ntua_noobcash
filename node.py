@@ -56,32 +56,56 @@ class Node:
 					requests.post(url_newNode, json={'ring' : self.ring})
 				self.current_id_count+=1
 
-				self.create_transaction(receiver=public_key, amount=100)
 				url_newNode = 'http://'+ip+port+'/broadcastBlockChain'
-				json_blockchain = self.chain.to_dict()
-				requests.post(url_newNode, json=json_blockchain)
+				blockchain = self.chain.to_dict()
+				requests.post(url_newNode, json=blockchain)
+
+				self.create_transaction(receiver=public_key, amount=100)
+		
 		return
 
 	def create_transaction(self, receiver, amount):
 		#remember to broadcast it
 		s = 0
 		transactionInputs = []
+
+		# [To Think?!] : Do we really need this flag?
+		# flag = False
+		
 		for t in self.wallet.utxos:
-			if s >= amount: break
+			if s >= amount:
+				# flag = True 
+				break
 			if t.address == self.wallet.address: 
 				transactionInputs.append(t)
 				s += t.amount
-		self.broadcast_transaction(transaction.Transaction(self.wallet.public_key, receiver, amount, transactionInputs, self.wallet.private_key))
-
+		
+		transaction = transaction.Transaction(self.wallet.public_key, receiver, amount, transactionInputs, self.wallet.private_key)
+		self.broadcast_transaction(transaction)
+		
+		return transaction
+			
 	def broadcast_transaction(self, T):
 		
 		dic = T.to_dict()
 
 		for _, value in self.ring.items():
 			ip = value[1]
-			url = 'http://' + ip + '/'
+			url = 'http://' + ip +port+ '/'
 			# data = json.dumps(dic)
 			res = requests.post(url + 'broadcastTransaction', json = dic)
+
+	def run_blockchain(self):
+		self.wallet.utxos = []
+		for b in self.chain.blocks:
+			self.block = b
+			self.run_block()
+
+
+	def run_block(self):
+		for t in self.block.listOfTransactions:
+			self.run_transaction(t)
+
 
 	def run_transaction(self, T):
 		transaction_inputs = T.transaction_inputs
