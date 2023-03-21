@@ -49,11 +49,11 @@ def receive_transactions():
     amount = temp['amount']
 
     transaction_inputs = [transaction.TransactionIO(r[0], bytes(r[1],'utf-8'), int(r[2])) for r in temp['transaction_inputs']]
-    transaction_outputs = [transaction.TransactionIO(r[0], bytes(r[1],'utf-8'), int(r[2])) for r in temp['transaction_outputs']]
+    # transaction_outputs = [transaction.TransactionIO(r[0], bytes(r[1],'utf-8'), int(r[2])) for r in temp['transaction_outputs']]
     
     T = transaction.Transaction(sender_adsress, receiver_address, amount, transaction_inputs, signature=sig)
-    T.print_trans()
-    print(transaction_inputs)
+    # T.print_trans()
+    # print(transaction_inputs)
     if (myNode.validate_transaction(T)):
         myNode.add_transaction_to_block(T)
         print("Transcation added to current Block!")
@@ -63,6 +63,9 @@ def receive_transactions():
             print(x.transaction_id, x.amount)
     else:
         print("You cant steal from me bozo!")
+        for x in myNode.wallet.utxos:
+            print("The UTXOs for all nodes: ")
+            x.print_trans()
     return temp
 
 @app.route('/register', methods=['POST'])
@@ -72,7 +75,7 @@ def registerNode():
     # public_key = bytes(temp['public_key'], 'utf-8')
     public_key = temp['public_key']
     ip=request.remote_addr
-    print(ip)
+    # print(ip)
     myNode.register_node_to_ring(public_key,ip)
     return '1'
 
@@ -101,8 +104,8 @@ def addNode():
     for pk, value in ring.items():
         if(myNode.wallet.address == pk):
             myNode.id = value[0]
-    print(ring)
-    return '1'
+    # print(ring)
+    return 'broadcast'
 
 @app.route('/broadcastBlockChain', methods=['POST'])
 def receiveBlockChain():
@@ -130,7 +133,9 @@ def receiveBlockChain():
         block_list.append(block.Block(prev_hash, ts, nonce, t_list))
     myNode.chain.blocks = block_list
     myNode.chain.capacity = capacity
-    print(len(myNode.chain.blocks))
+    print("I got the BlockChain")
+    print("My BlockChain length is: ", len(myNode.chain.blocks))
+    print("Running BlockChain from the start...")
     myNode.run_blockchain()
 
     return 'ok'
@@ -144,7 +149,7 @@ if __name__ == '__main__':
     port = args.port
 
     myNode = node.Node()
-    print(myNode.wallet.public_key)
+    # print(myNode.wallet.public_key)
 
     # myBlock = myNode.create_new_block()
     myNode.create_new_block()

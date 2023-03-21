@@ -25,7 +25,8 @@ class Node:
 			self.current_id_count = 1 #id for the next node
 			self.ring = {self.wallet.address.decode() : [0, '192.168.1.4']} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
 			genesis_block = block.Block(1,time.time(), 0)
-			genesis_transaction = transaction.Transaction(b'0', self.wallet.address, self.NBC,[],signature='notvalid_signature_bozo')
+			genesis_transaction = transaction.Transaction(b'0', self.wallet.address, self.NBC,[],signature=b'notvalid_signature_bozo')
+			self.run_transaction(genesis_transaction)
 			genesis_block.add_transaction(genesis_transaction)
 			self.chain.add_block(genesis_block)
 		else:
@@ -60,7 +61,7 @@ class Node:
 				blockchain = self.chain.to_dict()
 				requests.post(url_newNode, json=blockchain)
 
-				self.create_transaction(receiver=public_key, amount=100)
+				self.create_transaction(receiver=public_key.encode(), amount=100)
 		
 		return
 
@@ -80,8 +81,8 @@ class Node:
 				transactionInputs.append(t)
 				s += t.amount
 		
-		transaction = transaction.Transaction(self.wallet.public_key, receiver, amount, transactionInputs, self.wallet.private_key)
-		self.broadcast_transaction(transaction)
+		trans = transaction.Transaction(self.wallet.public_key, receiver, amount, transactionInputs, self.wallet.private_key)
+		self.broadcast_transaction(trans)
 		
 		return transaction
 			
@@ -97,9 +98,12 @@ class Node:
 
 	def run_blockchain(self):
 		self.wallet.utxos = []
+		i=1
 		for b in self.chain.blocks:
 			self.block = b
+			print("Running Block number ", i)
 			self.run_block()
+			i += 1 
 
 
 	def run_block(self):
