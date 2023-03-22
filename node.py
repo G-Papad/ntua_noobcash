@@ -12,7 +12,7 @@ import Crypto.Random
 # [TO FIX]: Implement in BlockChain
 #####################################
 
-CAPACITY = 1
+CAPACITY = 3
 MINING_DIFFICULTY = 4
 port = ':5000'
 
@@ -26,10 +26,11 @@ class Node:
 			self.id = 0
 			self.current_id_count = 1 #id for the next node
 			self.ring = {self.wallet.address.decode() : [0, '192.168.1.4']} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
-			genesis_block = block.Block(1,time.time(), 0)
-			genesis_transaction = transaction.Transaction(b'0', self.wallet.address, self.NBC,[],signature=b'notvalid_signature_bozo')
-			self.run_transaction(genesis_transaction)
+			genesis_block = block.Block(1,time.time(), nonce=0)		
+			genesis_transaction = transaction.Transaction(b'0', self.wallet.address, self.NBC,[],signature=b'notvalid_signature_bozo')		
 			genesis_block.add_transaction(genesis_transaction)
+			genesis_block.hash = genesis_block.myHash()
+			self.run_transaction(genesis_transaction)
 			self.chain.add_block(genesis_block)
 		else:
 			self.id=-1
@@ -47,13 +48,13 @@ class Node:
 		#add this node to the ring, only the bootstrap node can add a node to the ring after checking his wallet and ip:port address
 		#bottstrap node informs all other nodes and gives the request node an id and 100 NBCs
 		if(self.id==0):
-			print(type(public_key))
+			# print(type(public_key))
 			if public_key in self.ring.keys():
 				requests.post('http://'+ip+port+'/registerFail', json={'ERROR' : 'Public address already in use!'})
 			else:
 				self.ring[public_key] = [self.current_id_count, ip]
 				for _, value in self.ring.items():
-					print(type(_))
+					# print(type(_))
 					ip_b = value[1]
 					url_newNode = 'http://'+ip_b+port+'/broadcastNewNode'
 					requests.post(url_newNode, json={'ring' : self.ring})
@@ -101,17 +102,17 @@ class Node:
 	def run_blockchain(self):
 		self.wallet.utxos = []
 		i=1
-		print("UTXOs before running BlockChain:")
-		for x in self.wallet.utxos:
-			x.print_trans()
+		# print("UTXOs before running BlockChain:")
+		# for x in self.wallet.utxos:
+		# 	x.print_trans()
 		for b in self.chain.blocks:
 			self.block = b
 			print("Running Block number ", i)
 			self.run_block()
 			i += 1
-		print("UTXOs after running BlockChain:")
-		for x in self.wallet.utxos:
-			x.print_trans()
+		# print("UTXOs after running BlockChain:")
+		# for x in self.wallet.utxos:
+		# 	x.print_trans()
 
 
 	def run_block(self):
@@ -146,6 +147,8 @@ class Node:
 		
 		for t_out in transaction_outputs:
 			self.wallet.utxos.append(t_out)
+		
+		self.wallet.utxoslocal = self.wallet.utxos.copy()
 			
 	def validate_transaction(self, T):
 		#use of signature and NBCs balance
@@ -164,16 +167,19 @@ class Node:
 
 		for t_in in transaction_inputs:
 			res = False 
+			print("[Iteration Start]---------------------------------")
 			for t_utxo in self.wallet.utxoslocal:
-				print("---------------------------------")
+				print("\t\t\t----------------START-----------------")
 				t_utxo.print_trans()
-				print("---------------------------------")
+				print("\t\t\t---------------------------------")
 				t_in.print_trans()
-				print("---------------------------------")
+				print("\t\t\t----------------END-----------------")
 				if t_in.transaction_id == t_utxo.transaction_id and t_in.address == t_utxo.address and t_in.amount == t_utxo.amount:
 					res = True
 			if res == False:
+				print("Wut boy?!")
 				return False
+			print("[Iteration End]---------------------------------")
 			
 		return True
 

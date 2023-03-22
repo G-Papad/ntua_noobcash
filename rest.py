@@ -60,8 +60,8 @@ def receive_transactions():
     # print(transaction_inputs)
     if (myNode.validate_transaction(T)):
         myNode.add_transaction_to_block(T)
-        print("Transcation added to current Block!")
-        print(myNode.wallet.utxos)
+        print("Transaction added to current Block!")
+        # print(myNode.wallet.utxos)
         myNode.run_transaction_local(T)
         for x in myNode.wallet.utxos:
             print(x.transaction_id, x.amount)
@@ -136,9 +136,9 @@ def receiveBlockChain():
         block_list.append(block.Block(prev_hash, ts, nonce, t_list))
     myNode.chain.blocks = block_list.copy()
     myNode.chain.capacity = capacity
-    print("I got the BlockChain")
-    print("My BlockChain length is: ", len(myNode.chain.blocks))
-    print("Running BlockChain from the start...")
+    # print("I got the BlockChain")
+    # print("My BlockChain length is: ", len(myNode.chain.blocks))
+    # print("Running BlockChain from the start...")
     myNode.run_blockchain()
     prevHash = myNode.chain.blocks[len(myNode.chain.blocks)-1].hash
     myNode.create_new_block(prevHash)

@@ -12,7 +12,7 @@ class Block:
         self.timestamp = timestamp
         self.nonce=nonce
         self.listOfTransactions=tlist
-        self.hash = self.myHash()
+        self.hash = None
 
     def myHash(self):
         dic_blck = self.to_dict()
