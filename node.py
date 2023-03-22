@@ -207,6 +207,7 @@ class Node:
 	def mine_block(self):
 		while self.doMine == True:
 			self.block.hash = self.block.myHash()
+			print(self.block.hash)
 			if self.valid_proof(self.block.hash):
 				self.doMine = False
 				self.broadcast_block()
