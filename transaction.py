@@ -30,7 +30,7 @@ class TransactionIO:
         print("TransactionIO: ", self.transaction_id, ", ", self.address, ", ", self.amount, "\n")
         
     def toString(self):
-        return [self.transaction_id.hexdigest(), self.address.decode(), str (self.amount)]
+        return [self.transaction_id, self.address.decode(), str (self.amount)]
 
 class Transaction:
 
@@ -42,8 +42,8 @@ class Transaction:
         self.transaction_id = self.hash() # το hash του transaction
         self.transaction_inputs = transactionInputs # λίστα από Transaction Input
         change = sum([x.amount for x in transactionInputs]) - amount
-        self.transaction_outputs = [TransactionIO(self.transaction_id, sender_address, change), 
-                                    TransactionIO(self.transaction_id, receiver_address, amount)] # λίστα από Transaction Output 
+        self.transaction_outputs = [TransactionIO(self.transaction_id.hexdigest(), sender_address, change), 
+                                    TransactionIO(self.transaction_id.hexdigest(), receiver_address, amount)] # λίστα από Transaction Output 
         if (sender_private_key != None): 
             self.signature = self.sign_transaction(sender_private_key)
         else:

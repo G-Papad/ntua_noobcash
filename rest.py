@@ -36,6 +36,10 @@ def get_transactions():
 #     response = {'transactions': transactions}
 #     return jsonify(response), 200
 
+@app.route('/getBalance', methods=['GET'])
+def getBalance():
+    balance = myNode.wallet.balance()
+    return str (balance)
 
 @app.route('/broadcastTransaction', methods=['POST'])
 def receive_transactions():
@@ -138,6 +142,14 @@ def receiveBlockChain():
     myNode.run_blockchain()
 
     return 'ok'
+
+@app.route('/sendTrans', methods=['GET'])
+def send():
+    for keys,v in myNode.ring.items():
+        if keys != myNode.wallet.public_key:
+            receiver=keys
+    myNode.create_transaction(receiver=receiver.encode(), amount=50)
+    return "sendTrans page"
 
 if __name__ == '__main__':
     from argparse import ArgumentParser

@@ -152,7 +152,7 @@ class Node:
 				print("---------------------------------")
 				t_in.print_trans()
 				print("---------------------------------")
-				if t_in.transaction_id == t_utxo.transaction_id.hexdigest() and t_in.address == t_utxo.address and t_in.amount == t_utxo.amount:
+				if t_in.transaction_id == t_utxo.transaction_id and t_in.address == t_utxo.address and t_in.amount == t_utxo.amount:
 					res = True
 			if res == False:
 				return False
