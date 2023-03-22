@@ -32,6 +32,7 @@ class Node:
 			genesis_block.hash = genesis_block.myHash()
 			self.run_transaction(genesis_transaction)
 			self.chain.add_block(genesis_block)
+			self.create_new_block(genesis_block.hash)
 		else:
 			self.id=-1
 			self.ring={}	
@@ -76,7 +77,7 @@ class Node:
 		# [To Think?!] : Do we really need this flag?
 		# flag = False
 		
-		for t in self.wallet.utxos:
+		for t in self.wallet.utxoslocal:
 			if s >= amount:
 				# flag = True 
 				break
@@ -101,15 +102,15 @@ class Node:
 
 	def run_blockchain(self):
 		self.wallet.utxos = []
-		i=1
+		# i=1
 		# print("UTXOs before running BlockChain:")
 		# for x in self.wallet.utxos:
 		# 	x.print_trans()
 		for b in self.chain.blocks:
 			self.block = b
-			print("Running Block number ", i)
+			# print("Running Block number ", i)
 			self.run_block()
-			i += 1
+			# i += 1
 		# print("UTXOs after running BlockChain:")
 		# for x in self.wallet.utxos:
 		# 	x.print_trans()
@@ -190,6 +191,7 @@ class Node:
 		if(self.doMine == False):
 			self.block.add_transaction(T)
 			self.run_transaction_local(T)
+			print(len(self.block.listOfTransactions),' of ', CAPACITY)
 			if(len(self.block.listOfTransactions) == CAPACITY):
 				self.doMine = True
 				self.mine_block()

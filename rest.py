@@ -62,9 +62,9 @@ def receive_transactions():
         myNode.add_transaction_to_block(T)
         print("Transaction added to current Block!")
         # print(myNode.wallet.utxos)
-        myNode.run_transaction_local(T)
-        for x in myNode.wallet.utxos:
-            print(x.transaction_id, x.amount)
+        # myNode.run_transaction_local(T)
+        # for x in myNode.wallet.utxos:
+        #     print(x.transaction_id, x.amount)
     else:
         print("You cant steal from me bozo!")
         
@@ -102,7 +102,7 @@ def addNode():
     temp = json.loads((request.data).decode())
 
     ring = temp['ring']
-    myNode.ring = ring
+    myNode.ring = ring.copy()
     
     for pk, value in ring.items():
         if(myNode.wallet.address == pk):
