@@ -62,7 +62,7 @@ def receive_transactions():
         myNode.add_transaction_to_block(T)
         print("Transcation added to current Block!")
         print(myNode.wallet.utxos)
-        myNode.run_transaction(T)
+        myNode.run_transaction_local(T)
         for x in myNode.wallet.utxos:
             print(x.transaction_id, x.amount)
     else:
@@ -142,6 +142,10 @@ def receiveBlockChain():
     myNode.run_blockchain()
 
     return 'ok'
+
+@app.route('/broadcastBlock', methods=['POST'])
+def receive_block():
+    return 'blook'
 
 @app.route('/sendTrans', methods=['GET'])
 def send():

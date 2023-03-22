@@ -6,12 +6,14 @@ from flask import Flask, jsonify, request, render_template
 import requests
 import time
 import blockchain
+import Crypto.Random
 
 #####################################
 # [TO FIX]: Implement in BlockChain
 #####################################
 
 CAPACITY = 1
+MINING_DIFFICULTY = 4
 port = ':5000'
 
 class Node:
@@ -85,7 +87,7 @@ class Node:
 		self.broadcast_transaction(trans)
 		
 		return transaction
-			
+
 	def broadcast_transaction(self, T):
 		
 		dic = T.to_dict()
@@ -115,7 +117,21 @@ class Node:
 	def run_block(self):
 		for t in self.block.listOfTransactions:
 			self.run_transaction(t)
+		self.wallet.utxoslocal = self.wallet.utxos.copy()
 
+
+	def run_transaction_local(self, T):
+		transaction_inputs = T.transaction_inputs
+		transaction_outputs = T.transaction_outputs
+
+		for t_in in transaction_inputs:
+			for t in self.wallet.utxoslocal:
+				if t_in.transaction_id == t.transaction_id and t_in.address == t.address and t_in.amount == t.amount:
+					self.wallet.utxoslocal.remove(t)
+		
+		for t_out in transaction_outputs:
+			self.wallet.utxoslocal.append(t_out)
+			
 
 	def run_transaction(self, T):
 		transaction_inputs = T.transaction_inputs
@@ -146,7 +162,7 @@ class Node:
 
 		for t_in in transaction_inputs:
 			res = False 
-			for t_utxo in self.wallet.utxos:
+			for t_utxo in self.wallet.utxoslocal:
 				print("---------------------------------")
 				t_utxo.print_trans()
 				print("---------------------------------")
@@ -165,6 +181,7 @@ class Node:
 		# if enough transactions  mine
 		if(self.doMine == False):
 			self.block.add_transaction(T)
+			self.run_transaction_local(T)
 			if(len(self.block.listOfTransactions) == CAPACITY):
 				self.doMine = True
 				self.mine_block()
@@ -173,17 +190,39 @@ class Node:
 
 
 	def mine_block(self):
-		#do later
+		while self.doMine == True:
+			newHash = self.block.myHash()
+			if self.valid_proof():
+				self.doMine = False
+				self.broadcast_block()
+				break
+			else:
+				self.block.nonce = Crypto.Random.random.getrandbits(32)
 		return
 
 
 
-	# def broadcast_block():
+	def broadcast_block(self):
+		dic_blck = self.block.to_dict()
+		for _, value in self.ring.items():
+			ip = value[1]
+			url = 'http://' + ip + port + '/'
+			# data = json.dumps(dic)
+			res = requests.post(url + 'broadcastBlock', json = dic_blck)
+		return
 
 
 		
 
-	# def valid_proof(.., difficulty=MINING_DIFFICULTY):
+	def valid_proof(self, hash, difficulty=MINING_DIFFICULTY):
+		i=0
+		res = True
+		while i < difficulty:
+			if hash[i] != '0':
+				res = False
+				break
+			i += 1
+		return res
 
 
 
