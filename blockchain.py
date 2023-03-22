@@ -8,7 +8,6 @@ class BlockChain:
         self.blocks = []
         self.capacity = capacity
         # self.mining_difficulty = 
-        self.listOfChains = []
 
     def add_block(self, block):
         self.blocks.append(block)

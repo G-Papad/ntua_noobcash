@@ -191,8 +191,8 @@ class Node:
 
 	def mine_block(self):
 		while self.doMine == True:
-			newHash = self.block.myHash()
-			if self.valid_proof():
+			self.block.hash = self.block.myHash()
+			if self.valid_proof(self.block.hash):
 				self.doMine = False
 				self.broadcast_block()
 				break
@@ -230,17 +230,62 @@ class Node:
 		for t in B.listOfTransactions:
 			if not self.validate_transaction(t):
 				return False
+			self.run_transaction_local(t)
+		return True
+	
+	def reverse_transaction(self, T):
+		transaction_inputs = T.transaction_inputs
+		transaction_outputs = T.transaction_outputs
+
+		for t_in in transaction_outputs:
+			for t in self.wallet.utxoslocal:
+				if t_in.transaction_id == t.transaction_id and t_in.address == t.address and t_in.amount == t.amount:
+					self.wallet.utxoslocal.remove(t)
+		
+		for t_out in transaction_inputs:
+			self.wallet.utxoslocal.append(t_out)
+
+	def reverse_blocks_until_conflict(self, conflict_hash):
+		for b in reversed(self.chain.blocks):
+			if b.hash == conflict_hash:
+				break
+			else:
+				for t in b.listOfTransactions:
+					self.reverse_transaction(t)
+		return
+
+	def validate_chain(self, chain, conflict_hash):
+		current_hash = conflict_hash
+		restore_point = self.wallet.utxoslocal.copy()
+		self.wallet.utxoslocal = self.wallet.utxos.copy()
+		self.reverse_blocks_until_conflict(conflict_hash)
+		for b in chain:
+			if not (self.validate_block(b) and b.previousHash == current_hash):
+				self.wallet.utxoslocal = restore_point.copy()
+				return False
+			current_hash = b.hash
 		return True
 
 
 	# #concencus functions
 
-	# def valid_chain(self, chain):
-	# 	#check for the longer chain across all nodes
+	def valid_chain(self, chain):
+		#check for the longer chain across all nodes
+		chain_length = len(self.chain.blocks)
+		hashes = [x.hash for x in self.chain.blocks]
+		for _, value in self.ring.items():
+			ip = value[1]
+			url = 'http://' + ip + port + '/'
+			# data = json.dumps(dic)
+			res = requests.post(url + 'broadcastvalidChain', 
+		       json = {'length': chain_length , 'hashes': hashes})
+		return
 
 
-	# def resolve_conflicts(self):
-	# 	#resolve correct chain
+	def resolve_conflicts(self):
+		# resolve correct chain
+
+		return
 
 
 

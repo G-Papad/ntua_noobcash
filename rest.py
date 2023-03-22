@@ -5,7 +5,7 @@ import json
 import base64
 
 import node
-# import blockchain
+import blockchain
 import wallet
 import transaction
 import wallet
@@ -134,7 +134,7 @@ def receiveBlockChain():
             t_list.append(transaction.Transaction(sender_address, receiver_address, amount, transaction_inputs, signature=signature))
 
         block_list.append(block.Block(prev_hash, ts, nonce, t_list))
-    myNode.chain.blocks = block_list
+    myNode.chain.blocks = block_list.copy()
     myNode.chain.capacity = capacity
     print("I got the BlockChain")
     print("My BlockChain length is: ", len(myNode.chain.blocks))
@@ -160,23 +160,78 @@ def receive_block():
         transaction_inputs = [transaction.TransactionIO(r[0], bytes(r[1],'utf-8'), int(r[2])) for r in t['transaction_inputs']]
         t_list.append(transaction.Transaction(sender_address, receiver_address, amount, transaction_inputs, signature=signature))
     newBlock = block.Block(prev_hash, ts, nonce, t_list)
-    if myNode.validate_block(newBlock):
-        if(newBlock.previousHash == myNode.block.previousHash):
+    if(newBlock.previousHash == myNode.block.previousHash):
+        restore_point = myNode.wallet.utxoslocal.copy()
+        myNode.wallet.utxoslocal = myNode.wallet.utxos.copy()    
+        if myNode.validate_block(newBlock):        
             # newBlock continues myNode chain
             myNode.block = newBlock
             myNode.chain.add_block(newBlock)
             myNode.run_block()
             myNode.create_new_block(newBlock.hash)
         else:
-            for b in myNode.chain.blocks:
-                new_chain = []
-                if newBlock.previousHash == b.hash:
-                    new_chain.append(newBlock)
-                    myNode.chain.listOfChains.append(new_chain)
-
-                else:
-                    new_chain.append(b)
+            myNode.wallet.utxoslocal = restore_point.copy()
+    else:
+        myNode.valid_chain()
     return 'blook'
+
+@app.route('/broadcastvalidChain', methods=['POST'])
+def send_chain():
+    temp = json.loads((request.data).decode())
+    chain_length = temp['chain_length']
+    hashes = temp['hashes']
+    conflict_hash=''
+    ip=request.remote_addr
+
+    if chain_length < len(myNode.chain.blocks):
+        i=0
+        for b in myNode.chain.blocks:
+            if  i < len(hashes) and b.hash == hashes[i]:
+                i += 1
+            else:
+                blocks_to_send = myNode.chain.blocks[i:] 
+                conflict_hash = b.hash
+                break
+        blockchain_to_send = blockchain.BlockChain()
+        blockchain_to_send.blocks = blocks_to_send.copy()
+        url = 'http://' + ip + ':5000/'
+        requests.post(url+'receiveValidChain', 
+                      json={'length' : len(myNode.chain.blocks),
+            'chain' : blockchain_to_send.to_dict(),
+            'conflict_hash' : conflict_hash}) 
+    return 'send chain'
+
+@app.route('/receiveValidChain', methods=['POST'])
+def receive_chain():
+    temp = json.loads((request.data).decode())
+    chain = temp['chain']
+    length = temp['length']
+    conflict_hash = temp['conflict_hash']
+    
+    blocks = chain['blocks']
+    
+    block_list = []
+    for x in blocks:
+        prev_hash = x['previousHash']
+        ts = x['timestamp']
+        nonce = x['nonce']
+        transactions = x['listOfTransactions']
+        
+        t_list = []
+        for t in transactions:
+            sender_address = t['sender_address'].encode()
+            receiver_address = t['receiver_address'].encode()
+            amount = t['amount']
+            signature = base64.b64decode(t['signature'].encode())
+            transaction_inputs = [transaction.TransactionIO(r[0], bytes(r[1],'utf-8'), int(r[2])) for r in t['transaction_inputs']]
+            t_list.append(transaction.Transaction(sender_address, receiver_address, amount, transaction_inputs, signature=signature))
+
+        block_list.append(block.Block(prev_hash, ts, nonce, t_list))
+    
+    if(len(myNode.chain.blocks) < length):
+        myNode.validate_chain(block_list, conflict_hash)
+
+    return "receive chain"
 
 @app.route('/sendTrans', methods=['GET'])
 def send():
