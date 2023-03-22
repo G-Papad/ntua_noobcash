@@ -36,9 +36,9 @@ class Node:
 			self.ring={}	
 			self.block = self.create_new_block()
 
-	def create_new_block(self):
+	def create_new_block(self, prevHash):
 		self.doMine = False
-		self.block = block.Block(0,0)
+		self.block = block.Block(prevHash,time.time())
 
 	def create_wallet(self):
 		return wallet.Wallet()
@@ -224,7 +224,13 @@ class Node:
 			i += 1
 		return res
 
-
+	def validate_block(self, B:block.Block):
+		if not self.valid_proof(B.hash):
+			return False
+		for t in B.listOfTransactions:
+			if not self.validate_transaction(t):
+				return False
+		return True
 
 
 	# #concencus functions

@@ -145,6 +145,37 @@ def receiveBlockChain():
 
 @app.route('/broadcastBlock', methods=['POST'])
 def receive_block():
+    temp = json.loads((request.data).decode())
+    prev_hash = temp['previousHash']
+    ts = temp['timestamp']
+    nonce = temp['nonce']
+    transactions = temp['listOfTransactions']
+    
+    t_list = []
+    for t in transactions:
+        sender_address = t['sender_address'].encode()
+        receiver_address = t['receiver_address'].encode()
+        amount = t['amount']
+        signature = base64.b64decode(t['signature'].encode())
+        transaction_inputs = [transaction.TransactionIO(r[0], bytes(r[1],'utf-8'), int(r[2])) for r in t['transaction_inputs']]
+        t_list.append(transaction.Transaction(sender_address, receiver_address, amount, transaction_inputs, signature=signature))
+    newBlock = block.Block(prev_hash, ts, nonce, t_list)
+    if myNode.validate_block(newBlock):
+        if(newBlock.previousHash == myNode.block.previousHash):
+            # newBlock continues myNode chain
+            myNode.block = newBlock
+            myNode.chain.add_block(newBlock)
+            myNode.run_block()
+            myNode.create_new_block(newBlock.hash)
+        else:
+            for b in myNode.chain.blocks:
+                new_chain = []
+                if newBlock.previousHash == b.hash:
+                    new_chain.append(newBlock)
+                    myNode.chain.listOfChains.append(new_chain)
+
+                else:
+                    new_chain.append(b)
     return 'blook'
 
 @app.route('/sendTrans', methods=['GET'])
