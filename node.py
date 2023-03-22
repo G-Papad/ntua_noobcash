@@ -30,7 +30,6 @@ class Node:
 			genesis_block = Block(1,time.time(), nonce=0)		
 			genesis_transaction = transaction.Transaction(b'0', self.wallet.address, self.NBC,[],signature=b'notvalid_signature_bozo')		
 			genesis_block.add_transaction(genesis_transaction)
-			genesis_block.hash = genesis_block.myHash()
 			self.run_transaction(genesis_transaction)
 			self.chain.add_block(genesis_block)
 			ghash = genesis_block.hash
