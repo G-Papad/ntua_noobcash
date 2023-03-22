@@ -34,7 +34,7 @@ class Node:
 		else:
 			self.id=-1
 			self.ring={}	
-			self.block = self.create_new_block()
+			self.block = None
 
 	def create_new_block(self, prevHash):
 		self.doMine = False

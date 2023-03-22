@@ -140,6 +140,8 @@ def receiveBlockChain():
     print("My BlockChain length is: ", len(myNode.chain.blocks))
     print("Running BlockChain from the start...")
     myNode.run_blockchain()
+    prevHash = myNode.chain.blocks[len(myNode.chain.blocks)-1].hash
+    myNode.create_new_block(prevHash)
 
     return 'ok'
 
@@ -264,7 +266,6 @@ if __name__ == '__main__':
     # print(myNode.wallet.public_key)
 
     # myBlock = myNode.create_new_block()
-    myNode.create_new_block()
     
     app.run(host='192.168.1.9', port=port)
     
