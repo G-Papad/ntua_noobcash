@@ -1,4 +1,4 @@
-import block
+from block import Block
 import wallet
 import transaction
 import json
@@ -22,17 +22,19 @@ class Node:
 		self.doMine = False
 		self.chain = blockchain.BlockChain(capacity=CAPACITY)
 		if(master):
+			self.block = None
 			self.NBC=100*N
 			self.id = 0
 			self.current_id_count = 1 #id for the next node
 			self.ring = {self.wallet.address.decode() : [0, '192.168.1.4']} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
-			genesis_block = block.Block(1,time.time(), nonce=0)		
+			genesis_block = Block(1,time.time(), nonce=0)		
 			genesis_transaction = transaction.Transaction(b'0', self.wallet.address, self.NBC,[],signature=b'notvalid_signature_bozo')		
 			genesis_block.add_transaction(genesis_transaction)
 			genesis_block.hash = genesis_block.myHash()
 			self.run_transaction(genesis_transaction)
 			self.chain.add_block(genesis_block)
-			self.create_new_block(genesis_block.hash)
+			ghash = genesis_block.hash
+			self.create_new_block(ghash)
 		else:
 			self.id=-1
 			self.ring={}	
@@ -40,7 +42,8 @@ class Node:
 
 	def create_new_block(self, prevHash):
 		self.doMine = False
-		self.block = block.Block(prevHash,time.time())
+		self.block = Block(prevHash,time.time(), nonce=-1, tlist=[])
+		# return self.block
 
 	def create_wallet(self):
 		return wallet.Wallet()
@@ -231,7 +234,7 @@ class Node:
 			i += 1
 		return res
 
-	def validate_block(self, B:block.Block):
+	def validate_block(self, B):
 		if not self.valid_proof(B.hash):
 			return False
 		for t in B.listOfTransactions:
@@ -277,7 +280,7 @@ class Node:
 
 	# #concencus functions
 
-	def valid_chain(self, chain):
+	def valid_chain(self):
 		#check for the longer chain across all nodes
 		chain_length = len(self.chain.blocks)
 		hashes = [x.hash for x in self.chain.blocks]
