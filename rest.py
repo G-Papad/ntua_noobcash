@@ -227,9 +227,20 @@ def receive_chain():
             t_list.append(transaction.Transaction(sender_address, receiver_address, amount, transaction_inputs, signature=signature))
 
         block_list.append(block.Block(prev_hash, ts, nonce, t_list))
-    
+
     if(len(myNode.chain.blocks) < length):
-        myNode.validate_chain(block_list, conflict_hash)
+        if myNode.validate_chain(block_list, conflict_hash):
+            #update our blockchain
+            temp_list = reversed(myNode.chain.blocks)
+            for b in temp_list:
+                if b.hash != conflict_hash:
+                    myNode.chain.blocks.remove(b)
+                else:
+                    break
+            for b in block_list:
+                myNode.chain.add_block(b)
+            myNode.wallet.utxos = myNode.wallet.utxoslocal.copy()
+            myNode.create_new_block(block_list[len(block_list)-1].hash)
 
     return "receive chain"
 

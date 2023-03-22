@@ -125,7 +125,8 @@ class Node:
 		transaction_outputs = T.transaction_outputs
 
 		for t_in in transaction_inputs:
-			for t in self.wallet.utxoslocal:
+			temp = self.wallet.utxoslocal.copy()
+			for t in temp:
 				if t_in.transaction_id == t.transaction_id and t_in.address == t.address and t_in.amount == t.amount:
 					self.wallet.utxoslocal.remove(t)
 		
@@ -138,7 +139,8 @@ class Node:
 		transaction_outputs = T.transaction_outputs
 
 		for t_in in transaction_inputs:
-			for t in self.wallet.utxos:
+			temp = self.wallet.utxos.copy()
+			for t in temp:
 				if t_in.transaction_id == t.transaction_id and t_in.address == t.address and t_in.amount == t.amount:
 					self.wallet.utxos.remove(t)
 		
@@ -188,7 +190,6 @@ class Node:
 		else:
 			return
 
-
 	def mine_block(self):
 		while self.doMine == True:
 			self.block.hash = self.block.myHash()
@@ -200,8 +201,6 @@ class Node:
 				self.block.nonce = Crypto.Random.random.getrandbits(32)
 		return
 
-
-
 	def broadcast_block(self):
 		dic_blck = self.block.to_dict()
 		for _, value in self.ring.items():
@@ -210,9 +209,6 @@ class Node:
 			# data = json.dumps(dic)
 			res = requests.post(url + 'broadcastBlock', json = dic_blck)
 		return
-
-
-		
 
 	def valid_proof(self, hash, difficulty=MINING_DIFFICULTY):
 		i=0
@@ -238,7 +234,8 @@ class Node:
 		transaction_outputs = T.transaction_outputs
 
 		for t_in in transaction_outputs:
-			for t in self.wallet.utxoslocal:
+			temp = self.wallet.utxoslocal.copy()
+			for t in temp:
 				if t_in.transaction_id == t.transaction_id and t_in.address == t.address and t_in.amount == t.amount:
 					self.wallet.utxoslocal.remove(t)
 		
