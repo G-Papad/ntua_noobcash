@@ -289,7 +289,7 @@ class Node:
 			url = 'http://' + ip + port + '/'
 			# data = json.dumps(dic)
 			res = requests.post(url + 'broadcastvalidChain', 
-		       json = {'length': chain_length , 'hashes': hashes})
+		       json = {'chain_length': chain_length , 'hashes': hashes})
 		return
 
 
