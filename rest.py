@@ -66,7 +66,7 @@ def receive_transactions():
         # for x in myNode.wallet.utxos:
         #     print(x.transaction_id, x.amount)
     else:
-        print("You cant steal from me bozo!")
+        print("You cant steal from me bozo! [Transaction Failed Validation]")
         
     
     return temp

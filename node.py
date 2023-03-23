@@ -95,13 +95,14 @@ class Node:
 	def broadcast_transaction(self, T):
 		
 		dic = T.to_dict()
-
+		print("[Transaction]: Broadcasting ...")
+		print("\tTransaction: ", dic)
 		for _, value in self.ring.items():
 			ip = value[1]
 			url = 'http://' + ip +port+ '/'
 			# data = json.dumps(dic)
 			res = requests.post(url + 'broadcastTransaction', json = dic)
-
+		print("[Transaction]: END")
 	def run_blockchain(self):
 		self.wallet.utxos = []
 		# i=1
@@ -170,19 +171,23 @@ class Node:
 
 		for t_in in transaction_inputs:
 			res = False 
-			print("[Iteration Start]---------------------------------")
+			# print("[Iteration Start]---------------------------------")
 			for t_utxo in self.wallet.utxoslocal:
-				print("\t\t\t----------------START-----------------")
-				t_utxo.print_trans()
-				print("\t\t\t---------------------------------")
-				t_in.print_trans()
-				print("\t\t\t----------------END-----------------")
+				# print("\t\t\t----------------START-----------------")
+				# t_utxo.print_trans()
+				# print("\t\t\t---------------------------------")
+				# t_in.print_trans()
+				# print("\t\t\t----------------END-----------------")
 				if t_in.transaction_id == t_utxo.transaction_id and t_in.address == t_utxo.address and t_in.amount == t_utxo.amount:
 					res = True
 			if res == False:
-				print("Wut boy?!")
+				print("\n")
+				print("\t\t[Validation Failed]: Transaction Input didn't match UTXOs")
+				print("\t\t\tTransaction that didn't match:")
+				t_in.print_trans()
+				print("Validation Error Message END\n")
 				return False
-			print("[Iteration End]---------------------------------")
+			# print("[Iteration End]---------------------------------")
 			
 		return True
 
@@ -204,24 +209,32 @@ class Node:
 			return
 
 	def mine_block(self):
+		print()
+		print("[Start]: Mining...")
+		start = time.time()
 		while self.doMine == True:
 			self.block.hash = self.block.myHash()
-			print(self.block.hash)
+			# print(self.block.hash)
 			if self.valid_proof(self.block.hash):
 				self.doMine = False
 				self.broadcast_block()
 				break
 			else:
 				self.block.nonce = Crypto.Random.random.getrandbits(32)
+		duration = time.time() - start
+		print("[END]: Mine Duration ->", duration)
 		return
 
 	def broadcast_block(self):
 		dic_blck = self.block.to_dict()
+		print("[Broadcast]: Broadcasting ...")
+		print("\tBlock: ", dic_blck)
 		for _, value in self.ring.items():
 			ip = value[1]
 			url = 'http://' + ip + port + '/'
 			# data = json.dumps(dic)
 			res = requests.post(url + 'broadcastBlock', json = dic_blck)
+		print("[Broadcast]: END")
 		return
 
 	def valid_proof(self, hash, difficulty=MINING_DIFFICULTY):
