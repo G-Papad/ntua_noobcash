@@ -90,7 +90,7 @@ class Node:
 		trans = transaction.Transaction(self.wallet.public_key, receiver, amount, transactionInputs, self.wallet.private_key)
 		self.broadcast_transaction(trans)
 		
-		return transaction
+		return trans
 
 	def broadcast_transaction(self, T):
 		
@@ -128,7 +128,28 @@ class Node:
 	def run_transaction_local(self, T):
 		transaction_inputs = T.transaction_inputs
 		transaction_outputs = T.transaction_outputs
-
+		print("[DEBUGGING RUN TRANSACTION LOCAL]")
+		print("\n")
+		print("Current UTXOs Local:")
+		print("\n")
+		print("\t------------------------------------")
+		for x in self.wallet.utxoslocal:
+			x.print_trans()
+			print("\t------------------------------------")
+		print("\n")
+		print("\tTransactions Inputs:")
+		print("\n")
+		print("\t------------------------------------")
+		for x in transaction_inputs:
+			x.print_trans()
+			print("\t------------------------------------")
+		print("\n")
+		print("\tTransactions Outputs:")
+		print("\n")
+		print("\t------------------------------------")
+		for x in transaction_outputs:
+			x.print_trans()
+			print("\t------------------------------------")
 		for t_in in transaction_inputs:
 			temp = self.wallet.utxoslocal.copy()
 			for t in temp:
