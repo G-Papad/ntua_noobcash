@@ -156,6 +156,7 @@ class Node:
 			for t in temp:
 				if t_in.transaction_id == t.transaction_id and t_in.address == t.address and t_in.amount == t.amount:
 					self.wallet.utxoslocal.remove(t)
+					break
 		
 		for t_out in transaction_outputs:
 			if (t_out.amount > 0):
@@ -180,6 +181,7 @@ class Node:
 			for t in temp:
 				if t_in.transaction_id == t.transaction_id and t_in.address == t.address and t_in.amount == t.amount:
 					self.wallet.utxos.remove(t)
+					break
 		
 		for t_out in transaction_outputs:
 			if (t_out.amount > 0):
