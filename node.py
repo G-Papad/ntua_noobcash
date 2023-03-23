@@ -26,10 +26,12 @@ class Node:
 			self.NBC=100*N
 			self.id = 0
 			self.current_id_count = 1 #id for the next node
-			self.ring = {self.wallet.address.decode() : [0, '192.168.1.4']} # here we store information for every node, as its id, its address (ip:port) its public key and its balance 
-			genesis_block = Block(1,time.time(), nonce=0)		
-			genesis_transaction = transaction.Transaction(b'0', self.wallet.address, self.NBC,[],signature=b'notvalid_signature_bozo')		
-			genesis_block.add_transaction(genesis_transaction)
+			self.ring = {self.wallet.address.decode() : [0, '192.168.1.4']}
+			# here we store information for every node, as its id, its address (ip:port) its public key and its balance 
+			genesis_transaction = transaction.Transaction(b'0', self.wallet.address, 
+						 self.NBC, [], sender_private_key = None, signature=b'notvalid_signature_bozo')
+			genesis_block = Block(1,time.time(), nonce=0, tlist=[genesis_transaction])						
+			# genesis_block.add_transaction(genesis_transaction)
 			self.run_transaction(genesis_transaction)
 			self.chain.add_block(genesis_block)
 			ghash = genesis_block.hash
