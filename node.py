@@ -174,7 +174,7 @@ class Node:
 	def run_transaction(self, T):
 		transaction_inputs = T.transaction_inputs
 		transaction_outputs = T.transaction_outputs
-
+		print("[ENTER]: run_transaction\n")
 		for t_in in transaction_inputs:
 			temp = self.wallet.utxos.copy()
 			for t in temp:
@@ -186,7 +186,9 @@ class Node:
 				self.wallet.utxos.append(t_out)
 		
 		self.wallet.utxoslocal = self.wallet.utxos.copy()
-			
+		print("[EXIT]: run_transaction\n")
+		return
+	
 	def validate_transaction(self, T):
 		#use of signature and NBCs balance
 		# if T.hash() != T.transaction_id:
@@ -249,7 +251,6 @@ class Node:
 			return
 
 	def mine_block(self):
-		print()
 		print("[Start]: Mining...")
 		start = time.time()
 		while self.doMine == True:
@@ -288,12 +289,16 @@ class Node:
 		return res
 
 	def validate_block(self, B):
+		print("[ENTER]: validate_block\n")
 		if not self.valid_proof(B.hash):
+			print("[EXIT]: validate_block\n")
 			return False
 		for t in B.listOfTransactions:
 			if not self.validate_transaction(t):
+				print("[EXIT]: validate_block\n")
 				return False
 			self.run_transaction_local(t)
+		print("[EXIT]: validate_block\n")
 		return True
 	
 	def reverse_transaction(self, T):
@@ -310,15 +315,18 @@ class Node:
 			self.wallet.utxoslocal.append(t_out)
 
 	def reverse_blocks_until_conflict(self, conflict_hash):
+		print("[ENTER]: reverse_blocks_until_conflict\n")
 		for b in reversed(self.chain.blocks):
 			if b.hash == conflict_hash:
 				break
 			else:
 				for t in b.listOfTransactions:
 					self.reverse_transaction(t)
+		print("[EXIT]: reverse_blocks_until_conflict\n")
 		return
 
 	def validate_chain(self, chain, conflict_hash):
+		print("[ENTER]: validate_chain\n")
 		current_hash = conflict_hash
 		restore_point = self.wallet.utxoslocal.copy()
 		self.wallet.utxoslocal = self.wallet.utxos.copy()
@@ -326,8 +334,10 @@ class Node:
 		for b in chain:
 			if not (self.validate_block(b) and b.previousHash == current_hash):
 				self.wallet.utxoslocal = restore_point.copy()
+				print("[EXIT]: validate_chain\n")
 				return False
 			current_hash = b.hash
+		print("[EXIT]: validate_chain\n")
 		return True
 
 
@@ -335,6 +345,7 @@ class Node:
 
 	def valid_chain(self):
 		#check for the longer chain across all nodes
+		print("[ENTER]: valid_chain\n")
 		chain_length = len(self.chain.blocks)
 		hashes = [x.hash for x in self.chain.blocks]
 		for _, value in self.ring.items():
@@ -343,6 +354,7 @@ class Node:
 			# data = json.dumps(dic)
 			res = requests.post(url + 'broadcastvalidChain', 
 		       json = {'chain_length': chain_length , 'hashes': hashes})
+		print('[EXIT]: valid_chain\n')
 		return
 
 
