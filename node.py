@@ -130,7 +130,7 @@ class Node:
 		transaction_outputs = T.transaction_outputs
 		print("[DEBUGGING RUN TRANSACTION LOCAL]")
 		print("\n")
-		print("Current UTXOs Local:")
+		print("Before UTXOs Local:")
 		print("\n")
 		print("\t------------------------------------")
 		for x in self.wallet.utxoslocal:
@@ -150,6 +150,7 @@ class Node:
 		for x in transaction_outputs:
 			x.print_trans()
 			print("\t------------------------------------")
+		
 		for t_in in transaction_inputs:
 			temp = self.wallet.utxoslocal.copy()
 			for t in temp:
@@ -159,6 +160,15 @@ class Node:
 		for t_out in transaction_outputs:
 			if (t_out.amount > 0):
 				self.wallet.utxoslocal.append(t_out)
+
+		print("Current UTXOs Local:")
+		print("\n")
+		print("\t------------------------------------")
+		for x in self.wallet.utxoslocal:
+			x.print_trans()
+			print("\t------------------------------------")
+		print("[END DEBUGGING RUN TRANSACTION LOCAL]")
+		return
 			
 
 	def run_transaction(self, T):
