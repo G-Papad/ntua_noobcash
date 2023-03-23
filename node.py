@@ -136,7 +136,8 @@ class Node:
 					self.wallet.utxoslocal.remove(t)
 		
 		for t_out in transaction_outputs:
-			self.wallet.utxoslocal.append(t_out)
+			if (t_out.amount > 0):
+				self.wallet.utxoslocal.append(t_out)
 			
 
 	def run_transaction(self, T):
@@ -150,7 +151,8 @@ class Node:
 					self.wallet.utxos.remove(t)
 		
 		for t_out in transaction_outputs:
-			self.wallet.utxos.append(t_out)
+			if (t_out.amount > 0):
+				self.wallet.utxos.append(t_out)
 		
 		self.wallet.utxoslocal = self.wallet.utxos.copy()
 			
@@ -180,9 +182,11 @@ class Node:
 				# print("\t\t\t----------------END-----------------")
 				if t_in.transaction_id == t_utxo.transaction_id and t_in.address == t_utxo.address and t_in.amount == t_utxo.amount:
 					res = True
+			if t_in.amount <= 0:
+				res = False
 			if res == False:
 				print("\n")
-				print("\t\t[Validation Failed]: Transaction Input didn't match UTXOs")
+				print("\t\t[Validation Failed]: Transaction Input didn't match UTXOs or had no money")
 				print("\t\t\tTransaction that didn't match:")
 				t_in.print_trans()
 				print("Validation Error Message END\n")
