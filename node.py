@@ -13,7 +13,7 @@ import Crypto.Random
 #####################################
 
 CAPACITY = 3
-MINING_DIFFICULTY = 4
+MINING_DIFFICULTY = 1
 port = ':5000'
 
 class Node:
@@ -166,6 +166,10 @@ class Node:
 			return False
 		# also check for enough balance
 		# Should we check for enough balance or for same transaction inputs?
+
+		if T.sender_address == T.receiver_address:
+			print("[Transaction]: ERROR: You can't send money to yourself")
+			return False
 		transaction_inputs = T.transaction_inputs
 
 		if transaction_inputs == []:

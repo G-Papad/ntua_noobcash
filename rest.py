@@ -103,7 +103,10 @@ def addNode():
 
     ring = temp['ring']
     myNode.ring = ring.copy()
-    
+    print('\n')
+    print("THIS IS THE RING")
+    print(ring)
+    print("END RING")
     for pk, value in ring.items():
         if(myNode.wallet.address == pk):
             myNode.id = value[0]
@@ -249,7 +252,7 @@ def receive_chain():
 @app.route('/sendTrans', methods=['GET'])
 def send():
     for keys,v in myNode.ring.items():
-        if keys != myNode.wallet.public_key:
+        if keys != myNode.wallet.public_key.decode():
             receiver=keys
     myNode.create_transaction(receiver=receiver.encode(), amount=50)
     return "sendTrans page"
