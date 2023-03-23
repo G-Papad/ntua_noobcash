@@ -254,6 +254,19 @@ def send():
     myNode.create_transaction(receiver=receiver.encode(), amount=50)
     return "sendTrans page"
 
+@app.route('/printBlockchain', methods=['GET'])
+def print_blockchain():
+    str_chain = myNode.chain.to_dict()
+    return str_chain
+
+@app.route('/getAllBalance', methods=['GET'])
+def print_all_balance():
+    dic = {}
+    for address in myNode.ring.keys():
+        dic[address] = sum([x.amount for x in myNode.wallet.utxos if x.address == address])
+
+    return dic
+
 if __name__ == '__main__':
     from argparse import ArgumentParser
 
