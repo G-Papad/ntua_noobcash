@@ -173,6 +173,7 @@ class Node:
 		transaction_inputs = T.transaction_inputs
 
 		if transaction_inputs == []:
+			print("[Validation Failed]: You got no inputs bozo!")
 			return False
 
 		for t_in in transaction_inputs:
