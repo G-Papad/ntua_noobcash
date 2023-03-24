@@ -41,8 +41,8 @@ class Transaction:
         self.sender_address = sender_address # To public key του wallet από το οποίο προέρχονται τα χρήματα
         self.receiver_address = receiver_address # To public key του wallet στο οποίο θα καταλήξουν τα χρήματα
         self.amount = amount # το ποσό που θα μεταφερθεί
-        self.transaction_id = self.hash() # το hash του transaction
         self.transaction_inputs = transactionInputs # λίστα από Transaction Input
+        self.transaction_id = self.hash() # το hash του transaction
         change = sum([x.amount for x in transactionInputs]) - amount
         self.transaction_outputs = [TransactionIO(self.transaction_id.hexdigest(), sender_address, change), 
                                     TransactionIO(self.transaction_id.hexdigest(), receiver_address, amount)] # λίστα από Transaction Output 
