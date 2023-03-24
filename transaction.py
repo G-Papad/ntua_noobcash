@@ -25,8 +25,9 @@ class TransactionIO:
     def __init__(self, transaction_id, address, amount):
         self.address = address
         self.amount = amount
-        bytes_to_hash = bytes(transaction_id + address.decode() +str(amount), 'utf-8')
-        self.transaction_id = SHA256.new(bytes_to_hash).hexdigest()
+        # bytes_to_hash = bytes(transaction_id + address.decode() +str(amount), 'utf-8')
+        # self.transaction_id = SHA256.new(bytes_to_hash).hexdigest()
+        self.transaction_id = transaction_id
         
     
     def print_trans(self):
@@ -68,7 +69,7 @@ class Transaction:
     
     def hash(self):
         #calculate self.hash
-        tr_inputs = jsonpickle.encode(self.transaction_inputs)
+        tr_inputs = str(jsonpickle.encode(self.transaction_inputs))
         block_to_byte = bytes(str(self.sender_address) + str(self.receiver_address) + str(self.amount) + tr_inputs, 'utf-8')
         return SHA256.new(block_to_byte)
 
