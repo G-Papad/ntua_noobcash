@@ -23,6 +23,7 @@ class Node:
 		self.doMine = threading.Event()
 		self.doMine.clear()
 		mine_thread = threading.Thread(target=self.mine_block)
+		mine_thread.setDaemon()
 		mine_thread.start()
 		self.chain = blockchain.BlockChain(capacity=CAPACITY)
 		if(master):
