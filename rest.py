@@ -154,8 +154,6 @@ def receive_block():
     prev_hash = temp['previousHash']
     ts = temp['timestamp']
     nonce = temp['nonce']
-    print("A;JFKADLSJFALDKFJAL;KDSFJAJLDSFKJALD;FJA;LDSKJF;ALKSDJF;LAKSDJFALSKDJFL;ASDKJFL;AKSDJF;LAKDSJF;LASDKJFADSKJFLA;KSDJFL;ADSKJF;LADSFJAL;DSFJALSKDFJA;LSDKFJA;LDFKJA;LDSKFJAL;SDKFJ;ASDFADSFASDFASDFASADSF")
-    print(nonce)
     transactions = temp['listOfTransactions']
     
     t_list = []
