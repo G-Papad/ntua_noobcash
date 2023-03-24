@@ -168,15 +168,15 @@ def receive_block():
         transaction_inputs = [transaction.TransactionIO(r[0], bytes(r[1],'utf-8'), int(r[2])) for r in t['transaction_inputs']]
         t_list.append(transaction.Transaction(sender_address, receiver_address, amount, transaction_inputs, signature=signature))
     newBlock = block.Block(prev_hash, ts, nonce, t_list)
-    if(newBlock.previousHash == myNode.block.previousHash):
+    last_block_of_chain = myNode.chain.blocks[len(myNode.chain.blocks)-1]
+    if(newBlock.previousHash == last_block_of_chain.hash):
         restore_point = myNode.wallet.utxoslocal.copy()
         myNode.wallet.utxoslocal = myNode.wallet.utxos.copy()    
         if myNode.validate_block(newBlock):        
             # newBlock continues myNode chain
             myNode.chain.add_block(block.Block(prev_hash, ts, nonce, t_list))
-            myNode.block = newBlock
-            myNode.run_block()
-            myNode.create_new_block(myNode.chain.blocks[len(myNode.chain.blocks)-1].hash)
+            myNode.run_block(newBlock)
+            myNode.create_new_block(last_block_of_chain.hash)
         else:
             myNode.wallet.utxoslocal = restore_point.copy()
     else:
@@ -258,7 +258,7 @@ def send():
     for keys,v in myNode.ring.items():
         if keys != myNode.wallet.public_key.decode():
             receiver=keys
-    myNode.create_transaction(receiver=receiver.encode(), amount=50)
+    myNode.create_transaction(receiver=receiver.encode(), amount=1)
     return "sendTrans page"
 
 @app.route('/sendTransaction', methods=['GET', 'POST'])
@@ -322,10 +322,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     port = args.port
 
-    myNode = node.Node()
+    myNode = node.Node(master=True,N=5)
     # print(myNode.wallet.public_key)
 
     # myBlock = myNode.create_new_block()
     
-    app.run(host='192.168.1.9', port=port)
+    app.run(host='192.168.1.4', port=port)
     

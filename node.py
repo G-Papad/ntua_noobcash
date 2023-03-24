@@ -14,7 +14,7 @@ import threading
 #####################################
 
 CAPACITY = 3
-MINING_DIFFICULTY = 4
+MINING_DIFFICULTY = 1
 port = ':5000'
 ip = '192.168.1.4'
 
@@ -127,17 +127,17 @@ class Node:
 		# for x in self.wallet.utxos:
 		# 	x.print_trans()
 		for b in self.chain.blocks:
-			self.block = b
 			# print("Running Block number ", i)
-			self.run_block()
+			self.run_block(b)
 			# i += 1
 		# print("UTXOs after running BlockChain:")
 		# for x in self.wallet.utxos:
 		# 	x.print_trans()
 
 
-	def run_block(self):
-		for t in self.block.listOfTransactions:
+	def run_block(self,B):
+		b = B.copy()
+		for t in b.listOfTransactions:
 			self.run_transaction(t)
 		self.wallet.utxoslocal = self.wallet.utxos.copy()
 
@@ -256,7 +256,6 @@ class Node:
 
 	def add_transaction_to_block(self):
 		# if enough transactions  mine
-		#wha
 		while (1):
 			if(not self.doMine.is_set() and self.transaction_pool!=[]):
 				print('Adding Transaction to Block: ', self.block.previousHash)
@@ -273,28 +272,30 @@ class Node:
 						self.doMine.set()
 					
 
-	def mine_block(self):
+	def mine_block(self, B):
+		b = B.copy()
 		while self.doMine.wait():
 			print("[Start]: Mining...")
 			start = time.time()		
 			while self.doMine.is_set():
-				self.block.hash = self.block.myHash()
-				# print(self.block.hash)
-				if self.valid_proof(self.block.hash):
+				b.hash = b.myHash()
+				print(b.hash)
+				if self.valid_proof(b.hash):
+					self.broadcast_block(b)
 					self.doMine.clear()
-					self.broadcast_block()
 					break
 				else:
-					self.block.nonce = Crypto.Random.random.getrandbits(32)
+					b.nonce = Crypto.Random.random.getrandbits(32)
 			duration = time.time() - start
-			if(self.valid_proof(self.block.hash)):
+			if(self.valid_proof(b.hash)):
 				print("[END]: Mine Duration ->", duration)
 			else:
 				print("[END]: Mine was interrupted")
 		return
 
-	def broadcast_block(self):
-		dic_blck = self.block.to_dict()
+	def broadcast_block(self,B):
+		b = B.copy()
+		dic_blck = b.to_dict()
 		print("[Broadcast]: Broadcasting ...")
 		print("\tBlock: ", dic_blck)
 		for _, value in self.ring.items():

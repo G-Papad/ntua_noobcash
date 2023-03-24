@@ -36,8 +36,16 @@ class Block:
         block = {
             'previousHash' : self.previousHash,
             'timestamp' : self.timestamp,
-            'hash' : self.hash,
+            'hash' : self.hash, 
             'nonce' : self.nonce,
             'listOfTransactions' : [x.to_dict() for x in self.listOfTransactions]
         }
         return block
+    
+    def copy(self):
+        b = Block(-1,0)
+        setattr(b, 'previousHash', self.previousHash)
+        setattr(b, 'timestamp', self.timestamp)
+        setattr(b, 'nonce', self.nonce)
+        setattr(b, 'listOfTransactions', self.listOfTransactions.copy())
+        return b
