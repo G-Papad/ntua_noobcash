@@ -178,6 +178,7 @@ def receive_block():
             myNode.wallet.utxoslocal = restore_point.copy()
     else:
         myNode.valid_chain()
+        #newCode
     return 'blook'
 
 @app.route('/broadcastvalidChain', methods=['POST'])
