@@ -246,7 +246,7 @@ class Node:
 
 	def add_transaction_to_block(self, T):
 		# if enough transactions  mine
-		if(self.doMine == False):
+		if(not self.doMine.is_set()):
 			print('Adding Transaction to Block: ', self.block.previousHash)
 			self.block.add_transaction(T)
 			self.run_transaction_local(T)
