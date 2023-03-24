@@ -7,6 +7,7 @@ import requests
 import time
 import blockchain
 import Crypto.Random
+import threading
 
 #####################################
 # [TO FIX]: Implement in BlockChain
@@ -19,7 +20,10 @@ port = ':5000'
 class Node:
 	def __init__(self, master=False, N=None):
 		self.wallet = self.create_wallet()
-		self.doMine = False
+		self.doMine = threading.Event()
+		self.doMine.clear()
+		mine_thread = threading.Thread(target=self.mine_block)
+		mine_thread.start()
 		self.chain = blockchain.BlockChain(capacity=CAPACITY)
 		if(master):
 			self.block = None
@@ -42,7 +46,7 @@ class Node:
 			self.block = None
 
 	def create_new_block(self, prevHash):
-		self.doMine = False
+		self.doMine.clear()
 		self.block = Block(prevHash,time.time(), nonce=-1, tlist=[])
 		# return self.block
 
@@ -249,25 +253,25 @@ class Node:
 			for tr in self.block.listOfTransactions:
 				tr.print_trans()
 			if(len(self.block.listOfTransactions) == CAPACITY):
-				self.doMine = True
-				self.mine_block()
+				self.doMine.set()
 		else:
 			return
 
 	def mine_block(self):
-		print("[Start]: Mining...")
-		start = time.time()
-		while self.doMine == True:
-			self.block.hash = self.block.myHash()
-			# print(self.block.hash)
-			if self.valid_proof(self.block.hash):
-				self.doMine = False
-				self.broadcast_block()
-				break
-			else:
-				self.block.nonce = Crypto.Random.random.getrandbits(32)
-		duration = time.time() - start
-		print("[END]: Mine Duration ->", duration)
+		while self.doMine.wait():
+			print("[Start]: Mining...")
+			start = time.time()		
+			while self.doMine.is_set():
+				self.block.hash = self.block.myHash()
+				# print(self.block.hash)
+				if self.valid_proof(self.block.hash):
+					self.doMine.clear()
+					self.broadcast_block()
+					break
+				else:
+					self.block.nonce = Crypto.Random.random.getrandbits(32)
+			duration = time.time() - start
+			print("[END]: Mine Duration ->", duration)
 		return
 
 	def broadcast_block(self):

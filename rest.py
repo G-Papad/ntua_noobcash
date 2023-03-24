@@ -142,7 +142,7 @@ def receiveBlockChain():
     # print("I got the BlockChain")
     # print("My BlockChain length is: ", len(myNode.chain.blocks))
     # print("Running BlockChain from the start...")
-    myNode.run_blockchain()
+    myNode.s()
     prevHash = myNode.chain.blocks[len(myNode.chain.blocks)-1].hash
     myNode.create_new_block(prevHash)
 
