@@ -36,10 +36,12 @@ def get_transactions():
 #     response = {'transactions': transactions}
 #     return jsonify(response), 200
 
-@app.route('/getBalance', methods=['GET'])
+@app.route('/getBalance', methods=['GET', 'POST'])
 def getBalance():
     balance = myNode.wallet.balance()
-    return str (balance)
+    print(balance)
+    # ret = str(balance)
+    return str(balance)
 
 @app.route('/broadcastTransaction', methods=['POST'])
 def receive_transactions():
@@ -257,6 +259,46 @@ def send():
             receiver=keys
     myNode.create_transaction(receiver=receiver.encode(), amount=50)
     return "sendTrans page"
+
+@app.route('/sendTransaction', methods=['GET', 'POST'])
+def make_transaction():
+    args = request.args
+    receiver_id = int(args.get('to'))
+    amount = int(args.get('amount'))
+    receiver = None
+    for pk,value in myNode.ring.items():
+        if value[0] == receiver_id:
+            receiver = pk
+    if(receiver == None):
+        print('Receiver not found!')
+    else:
+        myNode.create_transaction(receiver.encode(), amount)
+    return 'sendTransactionPage'
+
+@app.route('/view', methods=['GET'])
+def view():
+    last_block = myNode.chain.blocks[len(myNode.chain.blocks)-1]
+    list_of_trans = last_block.listOfTransactions
+    for x in list_of_trans:
+        x.print_trans()
+
+    return jsonify(last_block.to_dict())
+
+@app.route('/help', methods=['GET'])
+def help():
+    help_str='''
+    HELP\n
+    Available commands:\n
+    t <recipient_address> <amount> \n
+    \t--New transaction: send to recipient_address wallet the amount amount of NBC coins to get from wallet sender_address. It will call create_transaction function in the backend that will implements the above function.\n
+    view\n
+    \t--View last transactions: print the transactions contained in the last validated block of noobcash blockchain.\n
+    balance\n
+    \t--Show balance: print the balance of the wallet.\n
+    help\n
+    '''
+    print(help_str)
+    return help_str
 
 @app.route('/printBlockchain', methods=['GET'])
 def print_blockchain():

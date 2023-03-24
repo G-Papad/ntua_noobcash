@@ -16,6 +16,7 @@ import threading
 CAPACITY = 3
 MINING_DIFFICULTY = 4
 port = ':5000'
+ip = '192.168.1.4'
 
 class Node:
 	def __init__(self, master=False, N=None):
@@ -377,3 +378,26 @@ class Node:
 
 
 
+
+	#cli commands
+	def balance():
+		url = 'http://' + ip + port + '/getBalance'
+		response = requests.get(url)
+		print('Your balance is :', response.text)
+		return response
+	
+	def view():
+		url = 'http://' + ip + port + '/view'
+		response = requests.get(url)
+		re = response.json()
+		print('List of transaction of last block of blockchain')
+		print(re['listOfTransactions'])
+
+	def sendTransCli(id, amount):
+		url = 'http://' + ip + port + '/sendTransaction?to='+str(id)+'&amount='+str(amount)
+		# print(url)
+		response = requests.get(url)
+		if(response.status_code == 200):
+			print('Transcation is send!')
+		else:
+			print('Transaction was not send please repeat!')
