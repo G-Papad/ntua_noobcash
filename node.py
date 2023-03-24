@@ -22,9 +22,9 @@ class Node:
 		self.wallet = self.create_wallet()
 		self.doMine = threading.Event()
 		self.doMine.clear()
-		mine_thread = threading.Thread(target=self.mine_block)
-		mine_thread.setDaemon()
-		mine_thread.start()
+		self.mine_thread = threading.Thread(target=self.mine_block)
+		self.mine_thread.setDaemon(True)
+		self.mine_thread.start()
 		self.chain = blockchain.BlockChain(capacity=CAPACITY)
 		if(master):
 			self.block = None
