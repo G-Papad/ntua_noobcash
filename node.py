@@ -20,12 +20,16 @@ ip = '192.168.1.4'
 
 class Node:
 	def __init__(self, master=False, N=None):
+		self.transaction_pool = []
 		self.wallet = self.create_wallet()
 		self.doMine = threading.Event()
 		self.doMine.clear()
 		self.mine_thread = threading.Thread(target=self.mine_block)
 		self.mine_thread.setDaemon(True)
 		self.mine_thread.start()
+		self.create_block_thread = threading.Thread(target=self.add_transaction_to_block)
+		self.create_block_thread.setDaemon(True)
+		self.create_block_thread.start()
 		self.chain = blockchain.BlockChain(capacity=CAPACITY)
 		if(master):
 			self.block = None
@@ -46,6 +50,10 @@ class Node:
 			self.id=-1
 			self.ring={}	
 			self.block = None
+
+	def add_transaction_to_pool(self, T):
+		self.transaction_pool.append(T)
+		return
 
 	def create_new_block(self, prevHash):
 		self.doMine.clear()
@@ -111,6 +119,7 @@ class Node:
 			# data = json.dumps(dic)
 			res = requests.post(url + 'broadcastTransaction', json = dic)
 		print("[Transaction]: END")
+	
 	def run_blockchain(self):
 		self.wallet.utxos = []
 		# i=1
@@ -245,19 +254,23 @@ class Node:
 
 
 
-	def add_transaction_to_block(self, T):
+	def add_transaction_to_block(self):
 		# if enough transactions  mine
-		if(not self.doMine.is_set()):
-			print('Adding Transaction to Block: ', self.block.previousHash)
-			self.block.add_transaction(T)
-			self.run_transaction_local(T)
-			print(len(self.block.listOfTransactions),' of ', CAPACITY)
-			for tr in self.block.listOfTransactions:
-				tr.print_trans()
-			if(len(self.block.listOfTransactions) == CAPACITY):
-				self.doMine.set()
-		else:
-			return
+		while (1):
+			if(not self.doMine.is_set()):
+				print('Adding Transaction to Block: ', self.block.previousHash)
+				# Take first transaction of pool, remove it and add it to current block
+				T = self.transaction_pool[0]
+				self.transaction_pool.remove(T)
+				if (self.validate_transaction(T)):
+					self.block.add_transaction(T)
+					self.run_transaction_local(T)
+					print(len(self.block.listOfTransactions),' of ', CAPACITY)
+					for tr in self.block.listOfTransactions:
+						tr.print_trans()
+					if(len(self.block.listOfTransactions) == CAPACITY):
+						self.doMine.set()
+					
 
 	def mine_block(self):
 		while self.doMine.wait():

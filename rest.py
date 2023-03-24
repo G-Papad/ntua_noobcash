@@ -321,10 +321,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     port = args.port
 
-    myNode = node.Node(master=True,N=5)
+    myNode = node.Node()
     # print(myNode.wallet.public_key)
 
     # myBlock = myNode.create_new_block()
     
-    app.run(host='192.168.1.4', port=port)
+    app.run(host='192.168.1.9', port=port)
     
