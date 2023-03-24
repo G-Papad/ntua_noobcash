@@ -24,7 +24,7 @@ class Node:
 		self.wallet = self.create_wallet()
 		self.doMine = threading.Event()
 		self.doMine.clear()
-		self.mine_thread = threading.Thread(target=self.mine_block)
+		self.mine_thread = threading.Thread(target=self.mine_block, args=[Block(1,time.time())])
 		self.mine_thread.setDaemon(True)
 		self.mine_thread.start()
 		self.create_block_thread = threading.Thread(target=self.add_transaction_to_block)
