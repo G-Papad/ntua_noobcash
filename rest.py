@@ -154,6 +154,8 @@ def receive_block():
     prev_hash = temp['previousHash']
     ts = temp['timestamp']
     nonce = temp['nonce']
+    print("A;JFKADLSJFALDKFJAL;KDSFJAJLDSFKJALD;FJA;LDSKJF;ALKSDJF;LAKSDJFALSKDJFL;ASDKJFL;AKSDJF;LAKDSJF;LASDKJFADSKJFLA;KSDJFL;ADSKJF;LADSFJAL;DSFJALSKDFJA;LSDKFJA;LDFKJA;LDSKFJAL;SDKFJ;ASDFADSFASDFASDFASADSF")
+    print(nonce)
     transactions = temp['listOfTransactions']
     
     t_list = []
@@ -170,10 +172,10 @@ def receive_block():
         myNode.wallet.utxoslocal = myNode.wallet.utxos.copy()    
         if myNode.validate_block(newBlock):        
             # newBlock continues myNode chain
+            myNode.chain.add_block(block.Block(prev_hash, ts, nonce, t_list))
             myNode.block = newBlock
-            myNode.chain.add_block(newBlock)
             myNode.run_block()
-            myNode.create_new_block(newBlock.hash)
+            myNode.create_new_block(myNode.chain.blocks[len(myNode.chain.blocks)-1].hash)
         else:
             myNode.wallet.utxoslocal = restore_point.copy()
     else:
@@ -278,10 +280,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     port = args.port
 
-    myNode = node.Node()
+    myNode = node.Node(master=True,N=5)
     # print(myNode.wallet.public_key)
 
     # myBlock = myNode.create_new_block()
     
-    app.run(host='192.168.1.9', port=port)
+    app.run(host='192.168.1.4', port=port)
     

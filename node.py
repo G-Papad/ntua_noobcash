@@ -14,7 +14,7 @@ import threading
 #####################################
 
 CAPACITY = 3
-MINING_DIFFICULTY = 1
+MINING_DIFFICULTY = 4
 port = ':5000'
 
 class Node:
@@ -272,7 +272,10 @@ class Node:
 				else:
 					self.block.nonce = Crypto.Random.random.getrandbits(32)
 			duration = time.time() - start
-			print("[END]: Mine Duration ->", duration)
+			if(self.valid_proof(self.block.hash)):
+				print("[END]: Mine Duration ->", duration)
+			else:
+				print("[END]: Mine was interrupted")
 		return
 
 	def broadcast_block(self):
