@@ -256,8 +256,9 @@ class Node:
 
 	def add_transaction_to_block(self):
 		# if enough transactions  mine
+		#wha
 		while (1):
-			if(not self.doMine.is_set()):
+			if(not self.doMine.is_set() and self.transaction_pool!=[]):
 				print('Adding Transaction to Block: ', self.block.previousHash)
 				# Take first transaction of pool, remove it and add it to current block
 				T = self.transaction_pool[0]
