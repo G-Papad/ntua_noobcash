@@ -8,6 +8,7 @@ import time
 import blockchain
 from Crypto.Random import random
 import threading
+import termcolor as co
 
 #####################################
 # [TO FIX]: Implement in BlockChain
@@ -24,8 +25,6 @@ class Node:
 		self.wallet = self.create_wallet()
 		self.doMine = threading.Event()
 		self.doMine.clear()
-		self.renew_block = threading.Event()
-		self.renew_block.clear()
 		self.mine_thread = threading.Thread(target=self.mine_block)
 		self.mine_thread.setDaemon(True)
 		self.mine_thread.start()
@@ -264,7 +263,7 @@ class Node:
 		while self.renew_block.wait():
 			if(len(self.block.listOfTransactions) < CAPACITY):
 				if((not self.doMine.is_set()) and self.transaction_pool!=[]):
-					print('Adding Transaction to Block: ', self.block.previousHash)
+					print(co.colored('Adding Transaction to Block: ' + str(self.block.previousHash),"green"))
 					# Take first transaction of pool, remove it and add it to current block
 					T = self.transaction_pool[0]
 					self.transaction_pool.remove(T)
@@ -275,8 +274,8 @@ class Node:
 						for tr in self.block.listOfTransactions:
 							tr.print_trans()
 					print('\naddtrans\n')
-					print(self.block.nonce)
-					print(self.block.listOfTransactions)	
+					print(co.colored(self.block.nonce,"green"))
+					print(co.colored(self.block.listOfTransactions,"green"))
 			else:
 				self.doMine.set()	
 
@@ -325,7 +324,7 @@ class Node:
 		return res
 
 	def validate_block(self, B):
-		print("[ENTER]: validate_block\n")
+		print(co.colored("[ENTER]: validate_block\n", "red"))
 		if not self.valid_proof(B.hash):
 			print("[EXIT]: validate_block\n")
 			return False
