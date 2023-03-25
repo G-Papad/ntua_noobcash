@@ -6,7 +6,7 @@ from flask import Flask, jsonify, request, render_template
 import requests
 import time
 import blockchain
-import Crypto.Random
+from Crypto.Random import random
 import threading
 
 #####################################
@@ -24,7 +24,9 @@ class Node:
 		self.wallet = self.create_wallet()
 		self.doMine = threading.Event()
 		self.doMine.clear()
-		self.mine_thread = threading.Thread(target=self.mine_block, args=[Block(1,time.time())])
+		self.renew_block = threading.Event()
+		self.renew_block.clear()
+		self.mine_thread = threading.Thread(target=self.mine_block)
 		self.mine_thread.setDaemon(True)
 		self.mine_thread.start()
 		self.create_block_thread = threading.Thread(target=self.add_transaction_to_block)
@@ -58,6 +60,9 @@ class Node:
 	def create_new_block(self, prevHash):
 		self.doMine.clear()
 		self.block = Block(prevHash,time.time(), nonce=-1, tlist=[])
+		self.renew_block.set()
+		print(self.block.nonce)
+		print(self.block.listOfTransactions)
 		# return self.block
 
 	def create_wallet(self):
@@ -256,38 +261,41 @@ class Node:
 
 	def add_transaction_to_block(self):
 		# if enough transactions  mine
-		while (1):
-			if(not self.doMine.is_set() and self.transaction_pool!=[]):
-				print('Adding Transaction to Block: ', self.block.previousHash)
-				# Take first transaction of pool, remove it and add it to current block
-				T = self.transaction_pool[0]
-				self.transaction_pool.remove(T)
-				if (self.validate_transaction(T)):
-					self.block.add_transaction(T)
-					self.run_transaction_local(T)
-					print(len(self.block.listOfTransactions),' of ', CAPACITY)
-					for tr in self.block.listOfTransactions:
-						tr.print_trans()
-					if(len(self.block.listOfTransactions) == CAPACITY):
-						self.doMine.set()
-					
+		while self.renew_block.wait():
+			if(len(self.block.listOfTransactions) < CAPACITY):
+				if((not self.doMine.is_set()) and self.transaction_pool!=[]):
+					print('Adding Transaction to Block: ', self.block.previousHash)
+					# Take first transaction of pool, remove it and add it to current block
+					T = self.transaction_pool[0]
+					self.transaction_pool.remove(T)
+					if (self.validate_transaction(T)):
+						self.block.add_transaction(T)
+						self.run_transaction_local(T)
+						print(len(self.block.listOfTransactions),' of ', CAPACITY)
+						for tr in self.block.listOfTransactions:
+							tr.print_trans()
+					print('\naddtrans\n')
+					print(self.block.nonce)
+					print(self.block.listOfTransactions)	
+			else:
+				self.doMine.set()	
 
-	def mine_block(self, B):
-		b = B.copy()
+	def mine_block(self):
 		while self.doMine.wait():
 			print("[Start]: Mining...")
 			start = time.time()		
 			while self.doMine.is_set():
-				b.hash = b.myHash()
-				print(b.hash)
-				if self.valid_proof(b.hash):
-					self.broadcast_block(b)
+				self.block.hash = self.block.myHash()
+				print(self.block.hash)
+				if self.valid_proof(self.block.hash):
+					self.broadcast_block(self.block)
 					self.doMine.clear()
 					break
 				else:
-					b.nonce = Crypto.Random.random.getrandbits(32)
+					self.block.nonce = random.getrandbits(32)
 			duration = time.time() - start
-			if(self.valid_proof(b.hash)):
+			if(self.valid_proof(self.block.hash)):
+				self.create_new_block(self.block.hash)
 				print("[END]: Mine Duration ->", duration)
 			else:
 				print("[END]: Mine was interrupted")

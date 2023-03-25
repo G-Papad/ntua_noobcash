@@ -111,7 +111,7 @@ def addNode():
     print(ring)
     print("END RING")
     for pk, value in ring.items():
-        if(myNode.wallet.address == pk):
+        if(myNode.wallet.address.decode() == pk):
             myNode.id = value[0]
     # print(ring)
     return 'broadcast'
@@ -172,7 +172,8 @@ def receive_block():
     if(newBlock.previousHash == last_block_of_chain.hash):
         restore_point = myNode.wallet.utxoslocal.copy()
         myNode.wallet.utxoslocal = myNode.wallet.utxos.copy()    
-        if myNode.validate_block(newBlock):        
+        if myNode.validate_block(newBlock):    
+            print('\n\n\nn\aldsufhailsdufhaslkjfhkslfhashfaklsjdfhklasfhlaksdhfklasdfhklas\n\n\n\n\n')    
             # newBlock continues myNode chain
             myNode.chain.add_block(block.Block(prev_hash, ts, nonce, t_list))
             myNode.run_block(newBlock)
@@ -181,6 +182,7 @@ def receive_block():
             myNode.wallet.utxoslocal = restore_point.copy()
     else:
         myNode.valid_chain()
+    # myNode.create_new_block(last_block_of_chain.hash)
         #newCode
     return 'blook'
 
