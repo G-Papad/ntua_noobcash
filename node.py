@@ -15,7 +15,7 @@ import termcolor as co
 #####################################
 
 CAPACITY = 3
-MINING_DIFFICULTY = 1
+MINING_DIFFICULTY = 3
 port = ':5000'
 ip = '192.168.1.4'
 
@@ -51,11 +51,13 @@ class Node:
 
 	def add_transaction_to_pool(self, T):
 		self.transaction_pool.append(T)
+		print('Transaction added to pool')
 		return
 
 	def create_new_block(self, prevHash):
 		self.block = Block(prevHash,time.time(), nonce=-1, tlist=[])
 		self.doMine.set()
+		print(self.block.previousHash)
 		# return self.block
 
 	def create_wallet(self):
@@ -254,6 +256,7 @@ class Node:
 
 	def add_transaction_to_block(self):
 		# if enough transactions  mine
+		print(co.colored('Block previous hash: ' + self.block.previousHash, 'yellow'))
 		if(len(self.block.listOfTransactions) < CAPACITY):
 			if(self.transaction_pool!=[]):
 				print(co.colored('Adding Transaction to Block: ' + str(self.block.previousHash),"green"))
@@ -283,7 +286,7 @@ class Node:
 			start = time.time()		
 			while self.doMine.is_set() and not (len(self.block.listOfTransactions) < CAPACITY):
 				self.block.hash = self.block.myHash()
-				print(self.block.hash)
+				print(co.colored(self.block.hash, 'yellow'))
 				if self.valid_proof(self.block.hash):
 					self.broadcast_block(self.block)
 					self.doMine.clear()
