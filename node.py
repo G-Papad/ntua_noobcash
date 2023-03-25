@@ -24,7 +24,6 @@ class Node:
 		self.transaction_pool = []
 		self.wallet = self.create_wallet()
 		self.doMine = threading.Event()
-		self.doMine.set()
 		self.mine_thread = threading.Thread(target=self.mine_block)
 		self.mine_thread.setDaemon(True)
 		self.mine_thread.start()
@@ -48,6 +47,7 @@ class Node:
 			self.id=-1
 			self.ring={}	
 			self.block = None
+			self.doMine.clear()
 
 	def add_transaction_to_pool(self, T):
 		self.transaction_pool.append(T)
@@ -269,7 +269,7 @@ class Node:
 				print('\naddtrans\n')
 				print(co.colored(self.block.nonce,"green"))
 				print(co.colored(self.block.listOfTransactions,"green"))
-				return False
+			return False
 		else:
 			return True	
 
