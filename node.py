@@ -302,8 +302,7 @@ class Node:
 			print("[END]: Mine was interrupted")
 		return
 
-	def broadcast_block(self,B):
-		b = B.copy()
+	def broadcast_block(self,b):
 		dic_blck = b.to_dict()
 		print("[Broadcast]: Broadcasting ...")
 		print("\tBlock: ", dic_blck)
