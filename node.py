@@ -413,6 +413,7 @@ class Node:
 
 	def resolve_conflicts(self):
 		# resolve correct chain
+		print('[ENTER]: Resolve conflicts!')
 		max_length = len(self.chain.blocks)
 		new_chain = None
 		hashes = [x.hash for x in self.chain.blocks]

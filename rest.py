@@ -173,8 +173,10 @@ def receive_block():
     last_block_of_chain = myNode.chain.blocks[len(myNode.chain.blocks)-1]
     while myNode.block_thread.is_alive():
         myNode.block_run.clear()
+        print('afasdfasdfasdfasfasfas\n\n')
     while myNode.mine_thread.is_alive():
         myNode.doMine.clear()
+        print('nnjnbjgnbjgbngjbngjbnjgbngj\n\n')
 
     if(newBlock.previousHash == last_block_of_chain.hash):
         restore_point = myNode.wallet.utxoslocal.copy()
@@ -188,6 +190,7 @@ def receive_block():
             print(co.colored(newBlock.hash,'blue'))
             myNode.create_new_block(last_block_of_chain.hash)
         else:
+            print('oops block not valid\n')
             myNode.wallet.utxoslocal = restore_point.copy()
            # if(not myNode.block_run.is_set() and not myNode.doMine.is_set()):
            #is this right?
@@ -355,10 +358,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     port = args.port
 
-    myNode = node.Node()
+    myNode = node.Node(master=True,N=5)
     # print(myNode.wallet.public_key)
 
     # myBlock = myNode.create_new_block()
     
-    app.run(host='192.168.1.9', port=port)
+    app.run(host='192.168.1.4', port=port)
     
