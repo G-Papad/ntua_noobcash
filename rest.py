@@ -10,7 +10,7 @@ import wallet
 import transaction
 import wallet
 import block
-
+import termcolor as co
 
 ### JUST A BASIC EXAMPLE OF A REST API WITH FLASK
 
@@ -178,6 +178,8 @@ def receive_block():
             myNode.doMine.clear()
             myNode.chain.add_block(block.Block(prev_hash, ts, nonce, t_list))
             myNode.run_block(newBlock)
+            print(co.colored(last_block_of_chain.hash,'red'))
+            print(co.colored(newBlock.hash,'blue'))
             myNode.create_new_block(last_block_of_chain.hash)
         else:
             myNode.wallet.utxoslocal = restore_point.copy()
