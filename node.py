@@ -274,7 +274,7 @@ class Node:
 					print(co.colored(self.block.listOfTransactions,"green"))
 			else:
 				self.doMine.set()
-				mine_thread = threading.Thread(target = self.mine_block, args=(self.block))	
+				mine_thread = threading.Thread(target = self.mine_block, args=[self.block])	
 				mine_thread.start()
 				self.block_run.clear()
 				return
