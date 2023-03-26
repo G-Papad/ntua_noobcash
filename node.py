@@ -29,7 +29,7 @@ class Node:
 		# self.block_run = threading.Event()
 		self.chain = blockchain.BlockChain(capacity=CAPACITY)
 		# self.mine_thread = threading.Thread(target = self.nope)
-		self.block_thread = threading.Thread(target = self.nope)
+		# self.block_thread = threading.Thread(target = self.nope)
 		if(master):
 			self.block = None
 			self.NBC=100*N
@@ -64,10 +64,10 @@ class Node:
 
 	def create_new_block(self, prevHash):
 		self.block = Block(prevHash,time.time(), nonce=-1, tlist=[])
-		self.self.doMine.set()
+		self.doMine.set()
 		print(self.block.previousHash)
-		self.block_thread = threading.Thread(target = self.add_transaction_to_block, daemon=True)
-		self.block_thread.start()
+		block_thread = threading.Thread(target = self.add_transaction_to_block, daemon=True)
+		block_thread.start()
 		# return self.block
 
 	def create_wallet(self):
@@ -307,6 +307,7 @@ class Node:
 					print("[END]: Mine was interrupted")
 				self.doMine.clear()
 				return
+		print('[exiting thread]\n')
 		self.doMine.clear()
 		return
 

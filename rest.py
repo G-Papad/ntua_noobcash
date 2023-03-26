@@ -171,9 +171,9 @@ def receive_block():
         t_list.append(transaction.Transaction(sender_address, receiver_address, amount, transaction_inputs, signature=signature))
     newBlock = block.Block(prev_hash, ts, nonce, t_list)
     last_block_of_chain = myNode.chain.blocks[len(myNode.chain.blocks)-1]
-    while myNode.block_thread.is_alive():
-        myNode.self.doMine.clear()
-        print('afasdfasdfasdfasfasfas\n\n')
+    # while myNode.block_thread.is_alive():
+    #     myNode.doMine.clear()
+    #     print('afasdfasdfasdfasfasfas\n\n')
     # while myNode.mine_thread.is_alive():
     #     myNode.doMine.clear()
     #     print('nnjnbjgnbjgbngjbngjbnjgbngj\n\n')
