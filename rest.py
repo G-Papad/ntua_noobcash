@@ -153,8 +153,8 @@ def receiveBlockChain():
 
 @app.route('/broadcastBlock', methods=['POST'])
 def receive_block():
-    myNode.block_run.clear()
     myNode.doMine.clear()
+    # myNode.block_run.clear()
     temp = json.loads((request.data).decode())
     prev_hash = temp['previousHash']
     ts = temp['timestamp']
@@ -172,11 +172,11 @@ def receive_block():
     newBlock = block.Block(prev_hash, ts, nonce, t_list)
     last_block_of_chain = myNode.chain.blocks[len(myNode.chain.blocks)-1]
     while myNode.block_thread.is_alive():
-        myNode.block_run.clear()
+        myNode.self.doMine.clear()
         print('afasdfasdfasdfasfasfas\n\n')
-    while myNode.mine_thread.is_alive():
-        myNode.doMine.clear()
-        print('nnjnbjgnbjgbngjbngjbnjgbngj\n\n')
+    # while myNode.mine_thread.is_alive():
+    #     myNode.doMine.clear()
+    #     print('nnjnbjgnbjgbngjbngjbnjgbngj\n\n')
 
     if(newBlock.previousHash == last_block_of_chain.hash):
         restore_point = myNode.wallet.utxoslocal.copy()
@@ -229,7 +229,7 @@ def send_chain():
 
 @app.route('/receiveValidChain', methods=['POST'])
 def receive_chain():
-    myNode.block_run.clear()
+    # myNode.block_run.clear()
     myNode.doMine.clear()
     temp = json.loads((request.data).decode())
     chain = temp['chain']
@@ -256,9 +256,9 @@ def receive_chain():
 
         block_list.append(block.Block(prev_hash, ts, nonce, t_list))
     while myNode.block_thread.is_alive():
-        myNode.block_run.clear()
-    while myNode.mine_thread.is_alive():
-        myNode.doMine.clear()
+        myNode.self.doMine.clear()
+    # while myNode.mine_thread.is_alive():
+    #     myNode.doMine.clear()
     if(len(myNode.chain.blocks) < length):
         if myNode.validate_chain(block_list, conflict_hash):
             #update our blockchain

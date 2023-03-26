@@ -26,9 +26,9 @@ class Node:
 		self.transaction_pool = []
 		self.wallet = self.create_wallet()
 		self.doMine = threading.Event()
-		self.block_run = threading.Event()
+		# self.block_run = threading.Event()
 		self.chain = blockchain.BlockChain(capacity=CAPACITY)
-		self.mine_thread = threading.Thread(target = self.nope)
+		# self.mine_thread = threading.Thread(target = self.nope)
 		self.block_thread = threading.Thread(target = self.nope)
 		if(master):
 			self.block = None
@@ -64,7 +64,7 @@ class Node:
 
 	def create_new_block(self, prevHash):
 		self.block = Block(prevHash,time.time(), nonce=-1, tlist=[])
-		self.block_run.set()
+		self.self.doMine.set()
 		print(self.block.previousHash)
 		self.block_thread = threading.Thread(target = self.add_transaction_to_block, daemon=True)
 		self.block_thread.start()
@@ -265,7 +265,7 @@ class Node:
 
 
 	def add_transaction_to_block(self):
-		while(self.block_run.is_set()):
+		while(self.doMine.is_set()):
 			#print(co.colored('Block previous hash: ' + self.block.previousHash, 'yellow'))
 			if(len(self.block.listOfTransactions) < CAPACITY):
 				if(self.transaction_pool!=[]):
@@ -283,12 +283,31 @@ class Node:
 					print(co.colored(self.block.nonce,"green"))
 					print(co.colored(self.block.listOfTransactions,"green"))
 			else:
-				self.doMine.set()
-				self.mine_thread = threading.Thread(target = self.mine_block, args=[self.block])	
-				self.mine_thread.start()
-				self.block_run.clear()
+				# self.doMine.set()
+				# self.mine_thread = threading.Thread(target = self.mine_block, args=[self.block], daemon=True)	
+				# self.mine_thread.start()
+				# self.block_run.clear()
+				b = self.block.copy()
+				print("[Start]: Mining...")
+				start = time.time()		
+				while self.doMine.is_set():
+					b.hash = b.myHash()
+					print(co.colored(b.hash, 'yellow'))
+					if self.valid_proof(b.hash):
+						self.broadcast_block(b)
+						self.doMine.clear()
+						return
+					else:
+						b.nonce = random.getrandbits(32)
+				duration = time.time() - start
+				if(self.valid_proof(b.hash)):
+					# self.create_new_block(self.block.hash)
+					print("[END]: Mine Duration ->", duration)
+				else:
+					print("[END]: Mine was interrupted")
+				self.doMine.clear()
 				return
-		self.block_run.clear()
+		self.doMine.clear()
 		return
 
 	def mine_block(self, B):
