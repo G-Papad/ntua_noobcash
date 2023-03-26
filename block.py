@@ -48,4 +48,5 @@ class Block:
         setattr(b, 'timestamp', self.timestamp)
         setattr(b, 'nonce', self.nonce)
         setattr(b, 'listOfTransactions', self.listOfTransactions.copy())
+        b.hash = b.myHash()
         return b
