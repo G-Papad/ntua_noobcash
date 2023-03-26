@@ -1,5 +1,6 @@
 import block
-
+import base64
+import transaction
 
 
 class BlockChain:
@@ -19,3 +20,4 @@ class BlockChain:
             'capacity' : self.capacity
         }
         return blockchain
+    

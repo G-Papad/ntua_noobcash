@@ -248,11 +248,12 @@ def receive_chain():
             t_list.append(transaction.Transaction(sender_address, receiver_address, amount, transaction_inputs, signature=signature))
 
         block_list.append(block.Block(prev_hash, ts, nonce, t_list))
-
+    while myNode.block_run.is_alive():
+        myNode.block_run.clear()
+    while myNode.doMine.is_alive():
+        myNode.doMine.clear()
     if(len(myNode.chain.blocks) < length):
         if myNode.validate_chain(block_list, conflict_hash):
-            myNode.block_run.clear()
-            myNode.doMine.clear()
             #update our blockchain
             temp_list = reversed(myNode.chain.blocks)
             for b in temp_list:
@@ -269,6 +270,17 @@ def receive_chain():
         myNode.create_new_block(block_list[len(block_list)-1].hash)
 
     return "receive chain"
+
+@app.route('/consensus', methods=['GET'])
+def consensus():
+    chain = myNode.chain.to_dict()
+    length = len(myNode.chain.blocks)
+    to_send = {'chain' : chain, 'length': length}
+
+    return jsonify(to_send), 200
+
+
+
 
 @app.route('/sendTrans', methods=['GET'])
 def send():

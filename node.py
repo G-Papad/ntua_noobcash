@@ -9,6 +9,7 @@ import blockchain
 from Crypto.Random import random
 import threading
 import termcolor as co
+import base64
 
 #####################################
 # [TO FIX]: Implement in BlockChain
@@ -27,6 +28,8 @@ class Node:
 		self.doMine = threading.Event()
 		self.block_run = threading.Event()
 		self.chain = blockchain.BlockChain(capacity=CAPACITY)
+		self.mine_thread = threading.Thread(target = self.nope)
+		self.block_thread = threading.Thread(target = self.nope)
 		if(master):
 			self.block = None
 			self.NBC=100*N
@@ -51,6 +54,9 @@ class Node:
 		run_trans = threading.Thread(target=self.run_trans_from_txt, daemon=True)
 		run_trans.start()
 
+	def nope (self):
+		return
+	
 	def add_transaction_to_pool(self, T):
 		self.transaction_pool.append(T)
 		print('Transaction added to pool')
@@ -60,8 +66,8 @@ class Node:
 		self.block = Block(prevHash,time.time(), nonce=-1, tlist=[])
 		self.block_run.set()
 		print(self.block.previousHash)
-		block_thread = threading.Thread(target = self.add_transaction_to_block, daemon=True)
-		block_thread.start()
+		self.block_thread = threading.Thread(target = self.add_transaction_to_block, daemon=True)
+		self.block_thread.start()
 		# return self.block
 
 	def create_wallet(self):
@@ -278,8 +284,8 @@ class Node:
 					print(co.colored(self.block.listOfTransactions,"green"))
 			else:
 				self.doMine.set()
-				mine_thread = threading.Thread(target = self.mine_block, args=[self.block])	
-				mine_thread.start()
+				self.mine_thread = threading.Thread(target = self.mine_block, args=[self.block])	
+				self.mine_thread.start()
 				self.block_run.clear()
 				return
 		self.block_run.clear()
@@ -400,9 +406,60 @@ class Node:
 
 	def resolve_conflicts(self):
 		# resolve correct chain
+		max_length = len(self.chain.blocks)
+		new_chain = None
+		hashes = [x.hash for x in self.chain.blocks]
+		for _, value in self.ring.items():
+			ip = value[1]
+			url = 'http://' + ip + port + '/'
+			response = requests.get(url + 'consensus')
+			if response.status_code == 200:
+				length = response.json()['length']
+				chain = self.to_chain(response.json())
+				if length > max_length and self.validate_chain(chain):
+					max_length = length
+					new_chain = chain
+		if new_chain:
+			self.chain = new_chain
+			new_hashes = [x.hash for x in self.chain.blocks]
+			common_block_hash = ''
+			for i in range(0, len(hashes)):
+				if hashes[i] != new_hashes[i]:
+					common_block_hash = hashes[i-1]
+					break
 
-		return
+				
+			return True
+		return False
 
+	def to_chain(self, dict):
+		chain = dict['chain']
+
+		blocks = chain['blocks']
+		capacity = chain['capacity']
+
+		block_list = []
+		for x in blocks:
+			prev_hash = x['previousHash']
+			ts = x['timestamp']
+			nonce = x['nonce']
+			transactions = x['listOfTransactions']
+			
+			t_list = []
+			for t in transactions:
+				sender_address = t['sender_address'].encode()
+				receiver_address = t['receiver_address'].encode()
+				amount = t['amount']
+				signature = base64.b64decode(t['signature'].encode())
+				transaction_inputs = [transaction.TransactionIO(r[0], bytes(r[1],'utf-8'), int(r[2])) for r in t['transaction_inputs']]
+				t_list.append(transaction.Transaction(sender_address, receiver_address, amount, transaction_inputs, signature=signature))
+
+			block_list.append(Block(prev_hash, ts, nonce, t_list))
+
+		ret_chain = blockchain.BlockChain(capacity=capacity)
+		ret_chain.blocks = block_list.copy()
+
+		return ret_chain
 
 
 
