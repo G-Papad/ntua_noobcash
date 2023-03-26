@@ -26,7 +26,6 @@ class Node:
 		self.doMine = threading.Event()
 		self.mine_thread = threading.Thread(target=self.mine_block)
 		self.mine_thread.setDaemon(True)
-		self.mine_thread.start()
 		self.chain = blockchain.BlockChain(capacity=CAPACITY)
 		if(master):
 			self.block = None
@@ -58,6 +57,7 @@ class Node:
 		self.block = Block(prevHash,time.time(), nonce=-1, tlist=[])
 		self.doMine.set()
 		print(self.block.previousHash)
+		self.mine_thread.start()
 		# return self.block
 
 	def create_wallet(self):
@@ -277,28 +277,28 @@ class Node:
 			return True	
 
 	def mine_block(self):
-		while self.doMine.wait():
-			while self.doMine.is_set():
-				if self.add_transaction_to_block():
-					break
-
-			print("[Start]: Mining...")
-			start = time.time()		
-			while self.doMine.is_set() and not (len(self.block.listOfTransactions) < CAPACITY):
-				self.block.hash = self.block.myHash()
-				print(co.colored(self.block.hash, 'yellow'))
-				if self.valid_proof(self.block.hash):
-					self.broadcast_block(self.block)
-					self.doMine.clear()
-					break
-				else:
-					self.block.nonce = random.getrandbits(32)
-			duration = time.time() - start
-			if(self.valid_proof(self.block.hash)):
-				# self.create_new_block(self.block.hash)
-				print("[END]: Mine Duration ->", duration)
+		while self.doMine.is_set():
+			if self.add_transaction_to_block():
+				break
+		if( not self.doMine.is_set()):
+			return
+		print("[Start]: Mining...")
+		start = time.time()		
+		while self.doMine.is_set() and not (len(self.block.listOfTransactions) < CAPACITY):
+			self.block.hash = self.block.myHash()
+			print(co.colored(self.block.hash, 'yellow'))
+			if self.valid_proof(self.block.hash):
+				self.broadcast_block(self.block)
+				self.doMine.clear()
+				return
 			else:
-				print("[END]: Mine was interrupted")
+				self.block.nonce = random.getrandbits(32)
+		duration = time.time() - start
+		if(self.valid_proof(self.block.hash)):
+			# self.create_new_block(self.block.hash)
+			print("[END]: Mine Duration ->", duration)
+		else:
+			print("[END]: Mine was interrupted")
 		return
 
 	def broadcast_block(self,B):
