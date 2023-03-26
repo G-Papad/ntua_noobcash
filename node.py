@@ -24,8 +24,7 @@ class Node:
 		self.transaction_pool = []
 		self.wallet = self.create_wallet()
 		self.doMine = threading.Event()
-		self.mine_thread = threading.Thread(target=self.mine_block)
-		self.mine_thread.setDaemon(True)
+		self.block_run = threading.Event()
 		self.chain = blockchain.BlockChain(capacity=CAPACITY)
 		if(master):
 			self.block = None
@@ -54,13 +53,11 @@ class Node:
 		return
 
 	def create_new_block(self, prevHash):
-		if self.mine_thread.is_alive():
-			self.doMine.clear()
-			# print(co.colored('Why thread is alive?', 'red'))
 		self.block = Block(prevHash,time.time(), nonce=-1, tlist=[])
-		self.doMine.set()
+		self.block_run.set()
 		print(self.block.previousHash)
-		self.mine_thread.start()
+		block_thread = threading.Thread(target = self.add_transaction_to_block, daemon=True)
+		block_thread.start()
 		# return self.block
 
 	def create_wallet(self):
@@ -258,46 +255,47 @@ class Node:
 
 
 	def add_transaction_to_block(self):
-		# if enough transactions  mine
-		#print(co.colored('Block previous hash: ' + self.block.previousHash, 'yellow'))
-		if(len(self.block.listOfTransactions) < CAPACITY):
-			if(self.transaction_pool!=[]):
-				print(co.colored('Adding Transaction to Block: ' + str(self.block.previousHash),"green"))
-				# Take first transaction of pool, remove it and add it to current block
-				T = self.transaction_pool[0]
-				self.transaction_pool.remove(T)
-				if (self.validate_transaction(T)):
-					self.block.add_transaction(T)
-					self.run_transaction_local(T)
-					print(len(self.block.listOfTransactions),' of ', CAPACITY)
-					for tr in self.block.listOfTransactions:
-						tr.print_trans()
-				print('\naddtrans\n')
-				print(co.colored(self.block.nonce,"green"))
-				print(co.colored(self.block.listOfTransactions,"green"))
-			return False
-		else:
-			return True	
+		while(self.block_run.is_set()):
+			#print(co.colored('Block previous hash: ' + self.block.previousHash, 'yellow'))
+			if(len(self.block.listOfTransactions) < CAPACITY):
+				if(self.transaction_pool!=[]):
+					print(co.colored('Adding Transaction to Block: ' + str(self.block.previousHash),"green"))
+					# Take first transaction of pool, remove it and add it to current block
+					T = self.transaction_pool[0]
+					self.transaction_pool.remove(T)
+					if (self.validate_transaction(T)):
+						self.block.add_transaction(T)
+						self.run_transaction_local(T)
+						print(len(self.block.listOfTransactions),' of ', CAPACITY)
+						for tr in self.block.listOfTransactions:
+							tr.print_trans()
+					print('\naddtrans\n')
+					print(co.colored(self.block.nonce,"green"))
+					print(co.colored(self.block.listOfTransactions,"green"))
+			else:
+				self.doMine.set()
+				mine_thread = threading.Thread(target = self.mine_block, args=(self.block))	
+				mine_thread.start()
+				self.block_run.clear()
+				return
+		self.block_run.clear()
+		return
 
-	def mine_block(self):
-		while self.doMine.is_set():
-			if self.add_transaction_to_block():
-				break
-		if( not self.doMine.is_set()):
-			return
+	def mine_block(self, B):
+		b = B.copy()
 		print("[Start]: Mining...")
 		start = time.time()		
-		while self.doMine.is_set() and not (len(self.block.listOfTransactions) < CAPACITY):
-			self.block.hash = self.block.myHash()
-			print(co.colored(self.block.hash, 'yellow'))
-			if self.valid_proof(self.block.hash):
-				self.broadcast_block(self.block)
+		while self.doMine.is_set():
+			b.hash = b.myHash()
+			print(co.colored(b.hash, 'yellow'))
+			if self.valid_proof(b.hash):
+				self.broadcast_block(b)
 				self.doMine.clear()
 				return
 			else:
-				self.block.nonce = random.getrandbits(32)
+				b.nonce = random.getrandbits(32)
 		duration = time.time() - start
-		if(self.valid_proof(self.block.hash)):
+		if(self.valid_proof(b.hash)):
 			# self.create_new_block(self.block.hash)
 			print("[END]: Mine Duration ->", duration)
 		else:

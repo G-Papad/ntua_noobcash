@@ -174,13 +174,14 @@ def receive_block():
         myNode.wallet.utxoslocal = myNode.wallet.utxos.copy()    
         if myNode.validate_block(newBlock):      
             # newBlock continues myNode chain
+            myNode.block_run.clear()
             myNode.doMine.clear()
             myNode.chain.add_block(block.Block(prev_hash, ts, nonce, t_list))
             myNode.run_block(newBlock)
             myNode.create_new_block(last_block_of_chain.hash)
         else:
             myNode.wallet.utxoslocal = restore_point.copy()
-            if(not myNode.doMine.is_set()):
+            if(not myNode.block_run.is_set() and not myNode.doMine.is_set()):
                 myNode.create_new_block(last_block_of_chain.hash)
     else:
         myNode.valid_chain()
@@ -243,6 +244,7 @@ def receive_chain():
 
     if(len(myNode.chain.blocks) < length):
         if myNode.validate_chain(block_list, conflict_hash):
+            myNode.block_run.clear()
             myNode.doMine.clear()
             #update our blockchain
             temp_list = reversed(myNode.chain.blocks)
