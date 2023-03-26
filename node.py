@@ -449,7 +449,8 @@ class Node:
 				chain = self.to_chain(response.json())
 				new_hashes = [x.hash for x in chain.blocks]
 				common_block_hash = ''
-				min_l = min(length, max_length)
+				min_l = min(len(hashes), len(new_hashes))
+				new_chain_blocks=[]
 				for i in range(0, min_l):
 					if hashes[i] != new_hashes[i]:
 						common_block_hash = hashes[i-1]
@@ -461,7 +462,8 @@ class Node:
 		if new_chain:
 			new_hashes = [x.hash for x in new_chain.blocks]
 			common_block_hash = ''
-			for i in range(0, len(hashes)):
+			min_l = min(len(hashes), len(new_hashes))
+			for i in range(0,min_l):
 				if hashes[i] != new_hashes[i]:
 					common_block_hash = hashes[i-1]
 					new_chain_blocks = chain.blocks[i:]
