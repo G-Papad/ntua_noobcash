@@ -177,6 +177,7 @@ def receive_block():
             myNode.block_run.clear()
             myNode.doMine.clear()
             myNode.chain.add_block(block.Block(prev_hash, ts, nonce, t_list))
+            last_block_of_chain = myNode.chain.blocks[len(myNode.chain.blocks)-1]
             myNode.run_block(newBlock)
             print(co.colored(last_block_of_chain.hash,'red'))
             print(co.colored(newBlock.hash,'blue'))
