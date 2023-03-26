@@ -256,7 +256,7 @@ class Node:
 
 	def add_transaction_to_block(self):
 		# if enough transactions  mine
-		print(co.colored('Block previous hash: ' + self.block.previousHash, 'yellow'))
+		#print(co.colored('Block previous hash: ' + self.block.previousHash, 'yellow'))
 		if(len(self.block.listOfTransactions) < CAPACITY):
 			if(self.transaction_pool!=[]):
 				print(co.colored('Adding Transaction to Block: ' + str(self.block.previousHash),"green"))
