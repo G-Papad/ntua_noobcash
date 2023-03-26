@@ -188,6 +188,7 @@ def receive_block():
                 myNode.create_new_block(last_block_of_chain.hash)
     else:
         myNode.valid_chain()
+        last_block_of_chain = myNode.chain.blocks[len(myNode.chain.blocks)-1]
         if(not myNode.block_run.is_set() and not myNode.doMine.is_set()):
                 myNode.create_new_block(last_block_of_chain.hash)
     # myNode.create_new_block(last_block_of_chain.hash)
