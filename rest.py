@@ -185,6 +185,8 @@ def receive_block():
                 myNode.create_new_block(last_block_of_chain.hash)
     else:
         myNode.valid_chain()
+        if(not myNode.block_run.is_set() and not myNode.doMine.is_set()):
+                myNode.create_new_block(last_block_of_chain.hash)
     # myNode.create_new_block(last_block_of_chain.hash)
         #newCode
     return 'blook'
