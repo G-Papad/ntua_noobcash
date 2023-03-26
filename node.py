@@ -432,14 +432,14 @@ class Node:
 	def run_trans_from_txt(self):
 		project_path = "../"
 		time.sleep(5)
-		if self.id != 0: requests.get("http://" + ip  + port + "/login/")
+		if self.id != 0: requests.get("http://" + ip  + port + "/login")
 		time.sleep(20)
-		f = open(project_path + "5nodes/transactions{}.txt".format(self.ring[self.wallet.address][0]), "r")
+		f = open(project_path + "5nodes/transactions{}.txt".format(self.ring[self.wallet.address.decode()][0]), "r")
 		s = " "
 		while s != "":
 			s = f.readline()
 			[r, amount] = s.split()
 			rcv = r[2:]
 			# if int(rcv) >= total: continue
-			requests.get("http://" + ip  + port + "/t?to=" + rcv + '&amount=' + amount)
+			requests.get("http://" + ip  + port + "/sendTransaction?to=" + rcv + '&amount=' + amount)
 			time.sleep(10)
