@@ -436,10 +436,11 @@ class Node:
 		time.sleep(20)
 		f = open(project_path + "5nodes/transactions{}.txt".format(self.ring[self.wallet.address.decode()][0]), "r")
 		s = " "
+		s = f.readline()
 		while s != "":
-			s = f.readline()
 			[r, amount] = s.split()
 			rcv = r[2:]
 			# if int(rcv) >= total: continue
 			requests.get("http://" + ip  + port + "/sendTransaction?to=" + rcv + '&amount=' + amount)
-			time.sleep(10)
+			time.sleep(3)
+			s = f.readline()

@@ -184,8 +184,9 @@ def receive_block():
             myNode.create_new_block(last_block_of_chain.hash)
         else:
             myNode.wallet.utxoslocal = restore_point.copy()
-            if(not myNode.block_run.is_set() and not myNode.doMine.is_set()):
-                myNode.create_new_block(last_block_of_chain.hash)
+           # if(not myNode.block_run.is_set() and not myNode.doMine.is_set()):
+           #is this right?
+            myNode.create_new_block(last_block_of_chain.hash)
     else:
         myNode.valid_chain()
         last_block_of_chain = myNode.chain.blocks[len(myNode.chain.blocks)-1]
@@ -263,6 +264,9 @@ def receive_chain():
                 myNode.chain.add_block(b)
             myNode.wallet.utxos = myNode.wallet.utxoslocal.copy()
             myNode.create_new_block(block_list[len(block_list)-1].hash)
+    else:
+        #is this right?
+        myNode.create_new_block(block_list[len(block_list)-1].hash)
 
     return "receive chain"
 
