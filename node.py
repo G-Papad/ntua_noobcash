@@ -265,6 +265,7 @@ class Node:
 
 
 	def add_transaction_to_block(self):
+		print(co.colored('[Staring thread]', 'red'))
 		while(self.doMine.is_set()):
 			#print(co.colored('Block previous hash: ' + self.block.previousHash, 'yellow'))
 			if(len(self.block.listOfTransactions) < CAPACITY):
@@ -307,7 +308,7 @@ class Node:
 					print("[END]: Mine was interrupted")
 				self.doMine.clear()
 				return
-		print('[exiting thread]\n')
+		print(co.colored('[exiting thread]\n','red'))
 		self.doMine.clear()
 		return
 
