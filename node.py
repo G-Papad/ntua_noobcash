@@ -54,6 +54,9 @@ class Node:
 		return
 
 	def create_new_block(self, prevHash):
+		while self.mine_thread.is_alive:
+			self.doMine.clear()
+			print(co.colored('Why thread is alive?', 'red'))
 		self.block = Block(prevHash,time.time(), nonce=-1, tlist=[])
 		self.doMine.set()
 		print(self.block.previousHash)
