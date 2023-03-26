@@ -18,6 +18,7 @@ CAPACITY = 3
 MINING_DIFFICULTY = 3
 port = ':5000'
 ip = '192.168.1.4'
+master_ip = '192.168.1.4'
 
 class Node:
 	def __init__(self, master=False, N=None):
@@ -46,6 +47,9 @@ class Node:
 			self.ring={}	
 			self.block = None
 			self.doMine.clear()
+		
+		run_trans = threading.Thread(target=self.run_trans_from_txt, daemon=True)
+		run_trans.start()
 
 	def add_transaction_to_pool(self, T):
 		self.transaction_pool.append(T)
@@ -424,3 +428,18 @@ class Node:
 			print('Transcation is send!')
 		else:
 			print('Transaction was not send please repeat!')
+
+	def run_trans_from_txt(self):
+		project_path = "../"
+		time.sleep(5)
+		if self.id != 0: requests.get("http://" + ip  + port + "/login/")
+		time.sleep(20)
+		f = open(project_path + "5nodes/transactions{}.txt".format(self.ring[self.wallet.address][0]), "r")
+		s = " "
+		while s != "":
+			s = f.readline()
+			[r, amount] = s.split()
+			rcv = r[2:]
+			# if int(rcv) >= total: continue
+			requests.get("http://" + ip  + port + "/t?to=" + rcv + '&amount=' + amount)
+			time.sleep(10)
