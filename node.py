@@ -430,7 +430,7 @@ class Node:
 			print('Transaction was not send please repeat!')
 
 	def run_trans_from_txt(self):
-		project_path = "../"
+		project_path = "./"
 		time.sleep(5)
 		if self.id != 0: requests.get("http://" + ip  + port + "/login")
 		time.sleep(20)
