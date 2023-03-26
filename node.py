@@ -433,7 +433,7 @@ class Node:
 		project_path = "./"
 		time.sleep(5)
 		if self.id != 0: requests.get("http://" + ip  + port + "/login")
-		time.sleep(20)
+		time.sleep(50)
 		f = open(project_path + "5nodes/transactions{}.txt".format(self.ring[self.wallet.address.decode()][0]), "r")
 		s = " "
 		s = f.readline()
