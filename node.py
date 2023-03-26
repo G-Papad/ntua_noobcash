@@ -295,6 +295,7 @@ class Node:
 					b.hash = b.myHash()
 					print(co.colored(b.hash, 'yellow'))
 					if self.valid_proof(b.hash):
+						#do we need this?
 						broadcast = threading.Thread(target=self.broadcast_block, args=[b], daemon=True)
 						broadcast.start()
 						self.doMine.clear()
