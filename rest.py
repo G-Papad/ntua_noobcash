@@ -153,6 +153,8 @@ def receiveBlockChain():
 
 @app.route('/broadcastBlock', methods=['POST'])
 def receive_block():
+    myNode.block_run.clear()
+    myNode.doMine.clear()
     temp = json.loads((request.data).decode())
     prev_hash = temp['previousHash']
     ts = temp['timestamp']
@@ -169,13 +171,16 @@ def receive_block():
         t_list.append(transaction.Transaction(sender_address, receiver_address, amount, transaction_inputs, signature=signature))
     newBlock = block.Block(prev_hash, ts, nonce, t_list)
     last_block_of_chain = myNode.chain.blocks[len(myNode.chain.blocks)-1]
+    while myNode.block_thread.is_alive():
+        myNode.block_run.clear()
+    while myNode.mine_thread.is_alive():
+        myNode.doMine.clear()
+
     if(newBlock.previousHash == last_block_of_chain.hash):
         restore_point = myNode.wallet.utxoslocal.copy()
         myNode.wallet.utxoslocal = myNode.wallet.utxos.copy()    
         if myNode.validate_block(newBlock):      
             # newBlock continues myNode chain
-            myNode.block_run.clear()
-            myNode.doMine.clear()
             myNode.chain.add_block(block.Block(prev_hash, ts, nonce, t_list))
             last_block_of_chain = myNode.chain.blocks[len(myNode.chain.blocks)-1]
             myNode.run_block(newBlock)
@@ -188,12 +193,9 @@ def receive_block():
            #is this right?
             myNode.create_new_block(last_block_of_chain.hash)
     else:
-        myNode.valid_chain()
+        myNode.resolve_conflicts()
         last_block_of_chain = myNode.chain.blocks[len(myNode.chain.blocks)-1]
-        if(not myNode.block_run.is_set() and not myNode.doMine.is_set()):
-                myNode.create_new_block(last_block_of_chain.hash)
-    # myNode.create_new_block(last_block_of_chain.hash)
-        #newCode
+        myNode.create_new_block(last_block_of_chain.hash)
     return 'blook'
 
 @app.route('/broadcastvalidChain', methods=['POST'])
@@ -224,6 +226,8 @@ def send_chain():
 
 @app.route('/receiveValidChain', methods=['POST'])
 def receive_chain():
+    myNode.block_run.clear()
+    myNode.doMine.clear()
     temp = json.loads((request.data).decode())
     chain = temp['chain']
     length = temp['length']
@@ -248,9 +252,9 @@ def receive_chain():
             t_list.append(transaction.Transaction(sender_address, receiver_address, amount, transaction_inputs, signature=signature))
 
         block_list.append(block.Block(prev_hash, ts, nonce, t_list))
-    while myNode.block_run.is_alive():
+    while myNode.block_thread.is_alive():
         myNode.block_run.clear()
-    while myNode.doMine.is_alive():
+    while myNode.mine_thread.is_alive():
         myNode.doMine.clear()
     if(len(myNode.chain.blocks) < length):
         if myNode.validate_chain(block_list, conflict_hash):
@@ -351,10 +355,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     port = args.port
 
-    myNode = node.Node(master=True,N=5)
+    myNode = node.Node()
     # print(myNode.wallet.public_key)
 
     # myBlock = myNode.create_new_block()
     
-    app.run(host='192.168.1.4', port=port)
+    app.run(host='192.168.1.9', port=port)
     

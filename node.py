@@ -51,8 +51,8 @@ class Node:
 			self.block = None
 			self.doMine.clear()
 		
-		run_trans = threading.Thread(target=self.run_trans_from_txt, daemon=True)
-		run_trans.start()
+		# run_trans = threading.Thread(target=self.run_trans_from_txt, daemon=True)
+		# run_trans.start()
 
 	def nope (self):
 		return
@@ -383,10 +383,17 @@ class Node:
 				print("[EXIT]: validate_chain\n")
 				return False
 			current_hash = b.hash
+		#an valoume tin valid_chain afto prepei na figei
+		self.wallet.utxoslocal = restore_point.copy()
 		print("[EXIT]: validate_chain\n")
 		return True
 
-
+	def run_chain(self, chain, conflict_hash):
+		self.wallet.utxoslocal = self.wallet.utxos.copy()
+		self.reverse_blocks_until_conflict(conflict_hash)
+		self.wallet.utxos = self.wallet.utxoslocal.copy()
+		for b in chain:
+			self.run_block(b)
 	# #concencus functions
 
 	def valid_chain(self):
@@ -416,18 +423,27 @@ class Node:
 			if response.status_code == 200:
 				length = response.json()['length']
 				chain = self.to_chain(response.json())
-				if length > max_length and self.validate_chain(chain):
+				new_hashes = [x.hash for x in chain.blocks]
+				common_block_hash = ''
+				min_l = min(length, max_length)
+				for i in range(0, min_l):
+					if hashes[i] != new_hashes[i]:
+						common_block_hash = hashes[i-1]
+						new_chain_blocks = chain.blocks[i:]
+						break				
+				if length > max_length and self.validate_chain(new_chain_blocks, common_block_hash):
 					max_length = length
 					new_chain = chain
 		if new_chain:
-			self.chain = new_chain
-			new_hashes = [x.hash for x in self.chain.blocks]
+			new_hashes = [x.hash for x in new_chain.blocks]
 			common_block_hash = ''
 			for i in range(0, len(hashes)):
 				if hashes[i] != new_hashes[i]:
 					common_block_hash = hashes[i-1]
+					new_chain_blocks = chain.blocks[i:]
 					break
-
+			self.run_chain(new_chain_blocks, common_block_hash)
+			self.chain = new_chain
 				
 			return True
 		return False
@@ -490,7 +506,7 @@ class Node:
 		project_path = "./"
 		time.sleep(5)
 		if self.id != 0: requests.get("http://" + ip  + port + "/login")
-		time.sleep(50)
+		time.sleep(10)
 		f = open(project_path + "5nodes/transactions{}.txt".format(self.ring[self.wallet.address.decode()][0]), "r")
 		s = " "
 		s = f.readline()
