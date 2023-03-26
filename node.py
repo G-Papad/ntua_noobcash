@@ -10,6 +10,7 @@ from Crypto.Random import random
 import threading
 import termcolor as co
 import base64
+import jsonpickle
 
 #####################################
 # [TO FIX]: Implement in BlockChain
@@ -39,7 +40,7 @@ class Node:
 			# here we store information for every node, as its id, its address (ip:port) its public key and its balance 
 			genesis_transaction = transaction.Transaction(b'0', self.wallet.address, 
 						 self.NBC, [], sender_private_key = None, signature=b'notvalid_signature_bozo')
-			genesis_block = Block(1,time.time(), nonce=0, tlist=[genesis_transaction])						
+			genesis_block = Block('1',time.time(), nonce=0, tlist=[genesis_transaction])						
 			# genesis_block.add_transaction(genesis_transaction)
 			self.run_transaction(genesis_transaction)
 			self.chain.add_block(genesis_block)
@@ -544,3 +545,41 @@ class Node:
 			delay = random.randint(2,4)
 			time.sleep(delay)
 			s = f.readline()
+
+	
+
+	def dummy_validate_chain(self, chain):
+		prevBlock = chain.blocks[0]
+		for b in chain.blocks:
+			if b.previousHash == '1':
+				continue
+			if b.hash != b.myHash():
+				return False
+			if b.hash != prevBlock.previousHash:
+				return False
+			prevBlock = b
+		return True
+			
+			
+
+	def dummy_consesus(self):
+		# resolve correct chain
+		print('[ENTER]: Resolve conflicts!')
+		max_length = len(self.chain.blocks)
+		new_chain = None
+		for _, value in self.ring.items():
+			ip = value[1]
+			url = 'http://' + ip + port + '/'
+			response = requests.get(url + 'dummyConsensus')
+			if response.status_code == 200:
+				length = response.json()['length']
+				chain = self.to_chain(response.json())			
+				if length > max_length and self.dummy_validate_chain(new_chain):
+					max_length = length
+					new_chain = chain
+		if new_chain:
+			self.chain = new_chain
+			self.wallet.utxos = jsonpickle.decode(response.json()['utxos'])
+				
+			return True
+		return False	

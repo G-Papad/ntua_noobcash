@@ -11,7 +11,7 @@ import transaction
 import wallet
 import block
 import termcolor as co
-
+import jsonpickle
 ### JUST A BASIC EXAMPLE OF A REST API WITH FLASK
 
 
@@ -196,7 +196,8 @@ def receive_block():
            #is this right?
             myNode.create_new_block(last_block_of_chain.hash)
     else:
-        myNode.resolve_conflicts()
+        # myNode.resolve_conflicts()
+        myNode.dummy_consesus()
         last_block_of_chain = myNode.chain.blocks[len(myNode.chain.blocks)-1]
         myNode.create_new_block(last_block_of_chain.hash)
     return 'blook'
@@ -286,7 +287,15 @@ def consensus():
 
     return jsonify(to_send), 200
 
+@app.route('/dummyConsesus', methods=['GET'])
+def dummyConsensus():
+    chain = myNode.chain.to_dict()
+    length = len(myNode.chain.blocks)
+    utxos = jsonpickle.encode(myNode.wallet.utxos)
+    to_send = {'chain' : chain, 'length': length, 
+               'utxos': utxos}
 
+    return jsonify(to_send), 200
 
 
 @app.route('/sendTrans', methods=['GET'])
