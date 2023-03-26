@@ -51,8 +51,8 @@ class Node:
 			self.block = None
 			self.doMine.clear()
 		
-		# run_trans = threading.Thread(target=self.run_trans_from_txt, daemon=True)
-		# run_trans.start()
+		run_trans = threading.Thread(target=self.run_trans_from_txt, daemon=True)
+		run_trans.start()
 
 	def nope (self):
 		return
@@ -530,7 +530,7 @@ class Node:
 		project_path = "./"
 		time.sleep(5)
 		if self.id != 0: requests.get("http://" + ip  + port + "/login")
-		time.sleep(10)
+		time.sleep(30)
 		f = open(project_path + "5nodes/transactions{}.txt".format(self.ring[self.wallet.address.decode()][0]), "r")
 		s = " "
 		s = f.readline()
@@ -539,5 +539,6 @@ class Node:
 			rcv = r[2:]
 			# if int(rcv) >= total: continue
 			requests.get("http://" + ip  + port + "/sendTransaction?to=" + rcv + '&amount=' + amount)
-			time.sleep(3)
+			delay = random.randint(2,4)
+			time.sleep(delay)
 			s = f.readline()
