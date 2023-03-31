@@ -15,7 +15,7 @@ import jsonpickle
 ### JUST A BASIC EXAMPLE OF A REST API WITH FLASK
 
 
-master_url='http://192.168.1.4:5000'
+master_url='http://192.168.0.4:5000'
 
 app = Flask(__name__)
 # CORS(app)
@@ -367,10 +367,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     port = args.port
 
-    myNode = node.Node(master=True,N=5)
+    myNode = node.Node()
     # print(myNode.wallet.public_key)
 
     # myBlock = myNode.create_new_block()
     
-    app.run(host='192.168.1.4', port=port)
+    app.run(host='192.168.0.4', port=port)
     

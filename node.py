@@ -19,8 +19,8 @@ import jsonpickle
 CAPACITY = 3
 MINING_DIFFICULTY = 3
 port = ':5000'
-ip = '192.168.1.4'
-master_ip = '192.168.1.4'
+ip = '192.168.0.4'
+master_ip = '192.168.0.4'
 
 class Node:
 	def __init__(self, master=False, N=None):
@@ -36,7 +36,7 @@ class Node:
 			self.NBC=100*N
 			self.id = 0
 			self.current_id_count = 1 #id for the next node
-			self.ring = {self.wallet.address.decode() : [0, '192.168.1.4']}
+			self.ring = {self.wallet.address.decode() : [0, '192.168.0.4']}
 			# here we store information for every node, as its id, its address (ip:port) its public key and its balance 
 			genesis_transaction = transaction.Transaction(b'0', self.wallet.address, 
 						 self.NBC, [], sender_private_key = None, signature=b'notvalid_signature_bozo')
@@ -234,9 +234,17 @@ class Node:
 			print("[Transaction]: ERROR: You can't send money to yourself")
 			return False
 		transaction_inputs = T.transaction_inputs
+		outputs = T.transaction_outputs
 
 		if transaction_inputs == []:
 			print("[Validation Failed]: You got no inputs bozo!")
+			return False
+		
+		sum = 0
+		for t_in in transaction_inputs:
+			sum += t_in.amount
+		if sum < transaction.amount:
+			print(co.colored("[ERROR]: Sender doesn't have enough money", 'red'))
 			return False
 
 		for t_in in transaction_inputs:
@@ -260,7 +268,12 @@ class Node:
 				print("Validation Error Message END\n")
 				return False
 			# print("[Iteration End]---------------------------------")
-			
+
+		for t_out in outputs:
+			if t_out.amount < 0:
+				print(co.colored("[ERROR]: UTXO output has negative value", 'red'))
+				return False 
+
 		return True
 
 
